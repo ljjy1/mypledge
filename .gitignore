@@ -30,3 +30,10 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+/.idea/
+/pledge-sol/lib/
+/pledge-sol/foundry.lock
+/pledge-sol/node_modules/
+/pledge-sol/artifacts/
+/pledge-sol/cache/
+/pledge-sol/types/

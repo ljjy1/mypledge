@@ -20,6 +20,7 @@ import {UniswapV2Router02} from "../uniswapv2/UniswapV2Router02.sol";
 // ============ OpenZeppelin & Safe 类型 ============
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Enum} from "@safe-global/safe-smart-account/contracts/libraries/Enum.sol";
 
 /**
  * @title PledgePoolTest
@@ -365,24 +366,27 @@ contract PledgePoolTest is SafeHelper {
      * @notice 通过 Safe 设置出借手续费为 0 应被拒绝
      */
     function test_setFee_revertsZeroLendFee() public {
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.setFee, (0, 1)));
+        vm.prank(safeAddress);
+        vm.expectRevert("lendFee must be greater than 0 and less than or equal to 1e8");
+        pool.setFee(0, 1);
     }
 
     /**
      * @notice 通过 Safe 设置借款手续费超过 1e8 应被拒绝
      */
     function test_setFee_revertsBorrowFeeTooHigh() public {
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.setFee, (1, BASE_DECIMAL + 1)));
+        vm.prank(safeAddress);
+        vm.expectRevert("borrowFee must be greater than 0 and less than or equal to 1e8");
+        pool.setFee(1, BASE_DECIMAL + 1);
     }
 
     /**
      * @notice 通过 Safe 设置 setOracle 为零地址应被拒绝
      */
     function test_setOracle_revertsZeroAddress() public {
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.setOracle, (address(0))));
+        vm.prank(safeAddress);
+        vm.expectRevert("Oracle address cannot be empty");
+        pool.setOracle(address(0));
     }
 
     /**
@@ -478,8 +482,9 @@ contract PledgePoolTest is SafeHelper {
     function test_createPool_revertsZeroSettleTime() public {
         PledgePool.CreatePoolParams memory params = _defaultPoolParams();
         params.settleTime = 0;
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.createPledgePool, (params)));
+        vm.prank(safeAddress);
+        vm.expectRevert("SettleTime must be greater than 0");
+        pool.createPledgePool(params);
     }
 
     /**
@@ -488,8 +493,9 @@ contract PledgePoolTest is SafeHelper {
     function test_createPool_revertsZeroEndTime() public {
         PledgePool.CreatePoolParams memory params = _defaultPoolParams();
         params.endTime = 0;
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.createPledgePool, (params)));
+        vm.prank(safeAddress);
+        vm.expectRevert("EndTime must be greater than 0");
+        pool.createPledgePool(params);
     }
 
     /**
@@ -498,8 +504,9 @@ contract PledgePoolTest is SafeHelper {
     function test_createPool_revertsEndTimeEqSettleTime() public {
         PledgePool.CreatePoolParams memory params = _defaultPoolParams();
         params.endTime = params.settleTime;
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.createPledgePool, (params)));
+        vm.prank(safeAddress);
+        vm.expectRevert("EndTime must be greater than SettleTime");
+        pool.createPledgePool(params);
     }
 
     /// @dev 构造默认池子参数的快捷函数
@@ -636,8 +643,9 @@ contract PledgePoolTest is SafeHelper {
     function test_settle_revertsBeforeSettleTime() public {
         _depositAndBorrow(1000e18, 2000e18);
         // 不推进时间，当前时间仍在 settleTime 之前
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.settlePool, (pid)));
+        vm.prank(safeAddress);
+        vm.expectRevert("Not reached settle time");
+        pool.settlePool(pid);
     }
 
     // ============================================================
@@ -741,8 +749,9 @@ contract PledgePoolTest is SafeHelper {
         _settlePool();
 
         // 当前时间在 endTime 之前
-        _expectGSO13();
-        _executeViaSafe(address(pool), abi.encodeCall(pool.finishPool, (pid)));
+        vm.prank(safeAddress);
+        vm.expectRevert("Not reached end time");
+        pool.finishPool(pid);
     }
 
     /**
@@ -1145,7 +1154,7 @@ contract PledgePoolTest is SafeHelper {
         bytes memory data = abi.encodeCall(pool.setFee, (1e7, 5e6));
         // 获取 Safe 交易哈希
         bytes32 txHash = safe.getTransactionHash(
-            address(pool), 0, data, 0,
+            address(pool), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), safe.nonce()
         );
         // 仅使用第一个 owner 签名（不满足阈值 2）
@@ -1155,7 +1164,7 @@ contract PledgePoolTest is SafeHelper {
         // 预期 Safe 执行失败
         vm.expectRevert();
         safe.execTransaction(
-            address(pool), 0, data, 0,
+            address(pool), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), sig
         );
 

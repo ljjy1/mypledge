@@ -11,6 +11,7 @@ import {IBscPledgeOracle} from "./interfaces/IBscPledgeOracle.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // 导入 Hardhat 控制台日志
 import {console} from "forge-std/src/console.sol";
+import {Enum} from "@safe-global/safe-smart-account/contracts/libraries/Enum.sol";
 
 // ============ Mock Chainlink 聚合器 ============
 
@@ -819,7 +820,7 @@ contract BscPledgeOracleTest is SafeHelper {
         bytes memory data = abi.encodeCall(oracle.setPriceDivisor, (10));
         // 获取 Safe 交易哈希
         bytes32 txHash = safe.getTransactionHash(
-            address(oracle), 0, data, 0,
+            address(oracle), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), safe.nonce()
         );
         // 仅使用第一个 owner 的签名（不满足阈值 2）
@@ -828,7 +829,7 @@ contract BscPledgeOracleTest is SafeHelper {
         // 预期 Safe 执行失败
         vm.expectRevert();
         safe.execTransaction(
-            address(oracle), 0, data, 0,
+            address(oracle), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), sig
         );
         // priceDivisor 应保持默认值 1，未被修改

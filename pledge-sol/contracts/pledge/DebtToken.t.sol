@@ -5,6 +5,7 @@ import {SafeHelper} from "../mocks/SafeHelper.sol";
 import {DebtToken} from "./DebtToken.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {console} from "forge-std/src/console.sol";
+import {Enum} from "@safe-global/safe-smart-account/contracts/libraries/Enum.sol";
 
 /// @title DebtTokenTest
 /// @notice DebtToken 合约测试 — 使用 Safe 多签钱包作为 owner
@@ -176,7 +177,7 @@ contract DebtTokenTest is SafeHelper {
 
         bytes memory data = abi.encodeCall(debtToken.setMinter, (newMinter, true));
         bytes32 txHash = safe.getTransactionHash(
-            address(debtToken), 0, data, 0,
+            address(debtToken), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), safe.nonce()
         );
 
@@ -185,7 +186,7 @@ contract DebtTokenTest is SafeHelper {
 
         vm.expectRevert();
         safe.execTransaction(
-            address(debtToken), 0, data, 0,
+            address(debtToken), 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), sig
         );
 

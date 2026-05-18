@@ -2,14 +2,17 @@
 pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/src/Test.sol";
-import {MockSafe} from "./MockSafe.sol";
+import {console} from "forge-std/src/Test.sol";
+import {Safe} from "@safe-global/safe-smart-account/contracts/Safe.sol";
+import {SafeProxyFactory} from "@safe-global/safe-smart-account/contracts/proxies/SafeProxyFactory.sol";
+import {Enum} from "@safe-global/safe-smart-account/contracts/libraries/Enum.sol";
 
 /// @title SafeHelper
 /// @notice 提供 Safe 多签钱包部署和交易执行的测试辅助功能
 /// @dev 继承此合约后调用 _deploySafe 初始化多签钱包，再使用 _executeViaSafe 执行交易
-///      使用轻量级 MockSafe 替代真实 Safe.sol，以避免 stack-too-deep 编译错误
 contract SafeHelper is Test {
-    MockSafe internal safe;
+    Safe internal safe;
+    SafeProxyFactory internal safeFactory;
     address internal safeAddress;
 
     uint256 internal _ownerPrivateKey1;
@@ -17,9 +20,6 @@ contract SafeHelper is Test {
     address internal _owner1;
     address internal _owner2;
     uint256 internal _threshold;
-
-    // 标记下一次 _executeViaSafe 预期 GS013 回滚（在 execTransaction 前注入 expectRevert）
-    bool internal _mockSafeExpectGs013;
 
     /// @dev 部署 Safe 多签钱包并设置参数
     /// @param key1 第一个所有者私钥
@@ -32,24 +32,26 @@ contract SafeHelper is Test {
         _owner2 = vm.addr(key2);
         _threshold = thresholdRequired;
 
-        safe = new MockSafe();
+        safeFactory = new SafeProxyFactory();
+        Safe safeSingleton = new Safe();
+
         address[] memory owners = new address[](2);
         owners[0] = _owner1;
         owners[1] = _owner2;
 
-        safe.setup(owners, thresholdRequired, address(0), bytes(""), address(0), address(0), 0, payable(address(0)));
-        safeAddress = address(safe);
-    }
+        bytes memory initializer = abi.encodeCall(
+            Safe.setup,
+            (owners, thresholdRequired, address(0), bytes(""), address(0), address(0), 0, payable(address(0)))
+        );
 
-    /// @dev 标记下一次 _executeViaSafe 预期抛出 GS013 错误（Safe 交易执行失败）
-    function _expectGSO13() internal {
-        _mockSafeExpectGs013 = true;
+        safe = Safe(payable(safeFactory.createProxyWithNonce(address(safeSingleton), initializer, 0)));
+        safeAddress = address(safe);
     }
 
     /// @dev 通过 Safe 多签执行交易 (按阈值收集签名)
     function _executeViaSafe(address to, bytes memory data) internal {
         bytes32 txHash = safe.getTransactionHash(
-            to, 0, data, 0, 0, 0, 0,
+            to, 0, data, Enum.Operation.Call, 0, 0, 0,
             address(0), payable(address(0)), safe.nonce()
         );
 
@@ -64,14 +66,8 @@ contract SafeHelper is Test {
             signatures = abi.encodePacked(r2, s2, v2, r1, s1, v1);
         }
 
-        // 在 execTransaction 前注入 expectRevert，避免被 getTransactionHash/nonce 提前消耗
-        if (_mockSafeExpectGs013) {
-            _mockSafeExpectGs013 = false;
-            vm.expectRevert("GS013");
-        }
-
         safe.execTransaction(
-            to, 0, data, 0,
+            to, 0, data, Enum.Operation.Call,
             0, 0, 0, address(0), payable(address(0)), signatures
         );
     }

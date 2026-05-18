@@ -12,12 +12,12 @@ const { ethers } = await network.create();
 // ======================== Safe 合约加载函数 ========================
 
 /**
- * 从 @safe-global/safe-contracts 包中读取 Safe 合约的 ABI 和 bytecode
+ * 从 @safe-global/safe-smart-account 包中读取 Safe 合约的 ABI 和 bytecode
  * 使用 npm 包自带的预编译产物，不依赖 Hardhat 本地编译
  */
 function loadSafeBuildInfo() {
-  const safeArtifact = _require("@safe-global/safe-contracts/build/artifacts/contracts/Safe.sol/Safe.json");
-  const factoryArtifact = _require("@safe-global/safe-contracts/build/artifacts/contracts/proxies/SafeProxyFactory.sol/SafeProxyFactory.json");
+  const safeArtifact = _require("@safe-global/safe-smart-account/build/artifacts/contracts/Safe.sol/Safe.json");
+  const factoryArtifact = _require("@safe-global/safe-smart-account/build/artifacts/contracts/proxies/SafeProxyFactory.sol/SafeProxyFactory.json");
 
   return {
     safeAbi: safeArtifact.abi,
@@ -85,7 +85,7 @@ interface PoolContext {
  *   1. 构造 SafeTx 结构体并用 EIP-712 签名
  *   2. 收集 threshold 个多签 owner 的签名（按地址升序排列）
  *   3. 调用 Safe.execTransaction 执行交易
- *   4. safeTxGas=0 时，如果内部交易失败 Safe 会回滚（GS013），适合验证成功场景
+ *   4. safeTxGas=0 时，如果内部交易失败 Safe 会转发内部 revert 消息，适合验证成功场景
  *   5. safeTxGas>0 时，内部交易失败 Safe 仍会成功但发出 ExecutionFailure 事件
  *
  * @param safe       Safe 多签合约实例
@@ -410,19 +410,19 @@ describe("PledgePool — Admin", function () {
     expect(await ctx.pool.lendFee()).to.equal(5n * 10n ** 6n);
     // 验证借款手续费已更新
     expect(await ctx.pool.borrowFee()).to.equal(3n * 10n ** 6n);
-    // 通过 Safe 多签设置出借手续费为 0 应该被拒绝（Safe 内部交易回滚，触发 GS013）
+    // 通过 Safe 多签设置出借手续费为 0 应该被拒绝（Safe 转发了内部 revert 消息）
     await expect(safeExec(ctx.safe, ctx.pool, "setFee", [0, 1n], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("lendFee must be greater than 0 and less than or equal to 1e8");
     // 通过 Safe 多签设置借款手续费超过 1e8 应该被拒绝
     await expect(safeExec(ctx.safe, ctx.pool, "setFee", [1n, BASE_DECIMAL + 1n], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("borrowFee must be greater than 0 and less than or equal to 1e8");
   });
 
   // 测试 setOracle 函数的权限和事件
   it("setOracle", async function () {
-    // 通过 Safe 多签设置为零地址应该被拒绝
+    // 通过 Safe 多签设置为零地址应该被拒绝（Safe 转发了内部 revert 消息）
     await expect(safeExec(ctx.safe, ctx.pool, "setOracle", [ethers.ZeroAddress], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("Oracle address cannot be empty");
     // 通过 Safe 多签设置为 lender 地址，验证事件是否正确发出
     const tx = await safeExec(ctx.safe, ctx.pool, "setOracle", [ctx.lender.address], ctx.safeOwners);
     // 验证 SetOracle 事件：old 和 new 地址（通过 Safe 调用，事件仍由 PledgePool 发出）
@@ -521,15 +521,15 @@ describe("PledgePool — Create Pool", function () {
       lendDebtToken: ctx.lendDebt.target, borrowDebtToken: ctx.borrowDebt.target,
       autoLiquidateThreshold: LIQUIDATE_THRESHOLD,
     };
-    // 通过 Safe 多签设置 settleTime 为 0 应该被拒绝（内部回滚，Safe 抛 GS013）
+    // 通过 Safe 多签设置 settleTime 为 0 应该被拒绝（Safe 转发了内部 revert 消息）
     await expect(safeExec(ctx.safe, ctx.pool, "createPledgePool", [{ ...base, settleTime: 0 }], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("SettleTime must be greater than 0");
     // 设置 endTime 为 0 应该被拒绝
     await expect(safeExec(ctx.safe, ctx.pool, "createPledgePool", [{ ...base, endTime: 0 }], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("EndTime must be greater than 0");
     // 设置 endTime 等于 settleTime 应该被拒绝（结束时间必须在结算时间之后）
     await expect(safeExec(ctx.safe, ctx.pool, "createPledgePool", [{ ...base, endTime: base.settleTime }], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("EndTime must be greater than SettleTime");
   });
 });
 
@@ -664,9 +664,9 @@ describe("PledgePool — Settle", function () {
   // 测试在结算时间之前调用 settlePool 被拒绝
   it("settlePool reverts before settleTime", async function () {
     const ctx = await deployBase();
-    // 当前时间还在结算时间之前，通过 Safe 调用会被内部拒绝（Safe 抛 GS013）
+    // 当前时间还在结算时间之前，通过 Safe 调用会被内部拒绝（Safe 转发了内部 revert 消息）
     await expect(safeExec(ctx.safe, ctx.pool, "settlePool", [ctx.pid], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("Not reached settle time");
   });
 });
 
@@ -795,9 +795,9 @@ describe("PledgePool — FinishPool (different tokens)", function () {
   // 注意：这个测试必须在 "finishPool with swap" 之前运行
   // 因为 finish 操作会改变池子状态，导致状态检查失败而非时间检查失败
   it("finishPool reverts before endTime", async function () {
-    // 当前时间还在结束时间之前，通过 Safe 调用会被内部拒绝（Safe 抛 GS013）
+    // 当前时间还在结束时间之前，通过 Safe 调用会被内部拒绝（Safe 转发了内部 revert 消息）
     await expect(safeExec(ctx.safe, ctx.pool, "finishPool", [ctx.pid], ctx.safeOwners, undefined, { safeTxGas: 0n }))
-      .to.be.revertedWith("GS013");
+      .to.be.revertedWith("Not reached end time");
   });
 
   // 测试不同币种池子的 finish 操作（涉及 DEX 兑换）

@@ -1,0 +1,7 @@
+{
+  "PledgeProtocol": {
+    "owner": "0x...多签钱包地址",
+    "swapRouter": "0x...DEX路由地址",
+    "feeAddress": "0x...手续费接收地址"
+  }
+}

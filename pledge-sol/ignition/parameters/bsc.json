@@ -1,0 +1,7 @@
+{
+  "PledgeProtocol": {
+    "owner": "0x...多签钱包地址",
+    "swapRouter": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+    "feeAddress": "0x...手续费接收地址"
+  }
+}

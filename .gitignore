@@ -37,3 +37,8 @@ go.work.sum
 /pledge-sol/artifacts/
 /pledge-sol/cache/
 /pledge-sol/types/
+/pledge-be/cmd/pledge_be/pledge_be
+/pledge-be/docs/openapi3.json
+/pledge-be/docs/openapi3.yaml
+/pledge-be/docs/swagger.json
+/pledge-be/docs/swagger.yaml

@@ -1,0 +1,5 @@
+# 环境变量（含私钥）
+.env
+
+# 本地部署记录（由 test/pledgePool-sepolia.ts 自动生成）
+.sepolia-deployments.json

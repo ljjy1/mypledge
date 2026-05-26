@@ -1,5 +1,14 @@
+import "dotenv/config";
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import { configVariable, defineConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
+
+function env(name: string): string {
+  const val = process.env[name];
+  if (!val) {
+    throw new Error(`${name} 未设置，请在 .env 文件中添加 ${name}=...`);
+  }
+  return val;
+}
 
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthersPlugin],
@@ -39,8 +48,8 @@ export default defineConfig({
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: env("SEPOLIA_RPC_URL"),
+      accounts: [env("SEPOLIA_PRIVATE_KEY")],
     },
   },
 });

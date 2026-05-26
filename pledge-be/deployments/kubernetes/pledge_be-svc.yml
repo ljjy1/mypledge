@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pledge-be-svc
+  namespace: pledge-be
+spec:
+  selector:
+    app: pledge-be
+  type: ClusterIP
+  ports:
+    - name: pledge-be-svc-http-port
+      port: 8080
+      targetPort: 8080
+

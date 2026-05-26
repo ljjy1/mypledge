@@ -8,7 +8,7 @@ npm install --legacy-peer-deps
 ## 测试
 
 ```shell
-# 运行所有测试
+# 运行所有测试（solidity + mocha）
 npx hardhat test
 
 # 运行 solidity 测试
@@ -16,6 +16,27 @@ npx hardhat test solidity
 
 # 运行 mocha 测试
 npx hardhat test mocha
+```
+
+### 指定 describe / it 运行
+
+使用 Mocha 的 `--grep` 按名称过滤测试：
+
+```shell
+# 只运行 describe 名包含 "Sepolia" 的测试
+npx hardhat test mocha --grep "Sepolia"
+
+# 只运行 it 名包含 "多签" 的测试
+npx hardhat test mocha --grep "多签"
+
+# 指定具体文件 + describe 名称
+npx hardhat test mocha test/pledgePool-sepolia.ts --network sepolia --grep "多签操作"
+
+# 正则匹配：it 名包含 "setOracle" 或 "owner"
+npx hardhat test mocha --grep "/setOracle|owner/"
+
+# 反向匹配：跳过包含 "sepolia" 的测试（忽略大小写）
+npx hardhat test mocha --grep "/sepolia/i" --invert
 ```
 
 ## 部署到本地节点
@@ -116,9 +137,81 @@ npx hardhat ignition deploy ignition/modules/PledgeProtocol.ts \
   --parameters ignition/parameters/bsc.json
 ```
 
+## Sepolia 测试网部署测试
+
+`test/pledgePool-sepolia.ts` 是 Sepolia 测试网的部署 + 验证一体化脚本。
+
+### 首次部署
+
+先在 `.env` 中填入 Sepolia RPC URL 和部署账户私钥：
+
+```
+SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/YOUR_API_KEY
+SEPOLIA_PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
+```
+
+执行部署（多签地址和测试参数已在脚本中硬编码）：
+
+```shell
+# 完整部署所有合约（耗时 2-5 分钟）
+npx hardhat test mocha test/pledgePool-sepolia.ts \
+  --network sepolia
+```
+
+首次执行会：
+1. 部署 UniswapV2 + Mock ERC20 + Oracle + DebtToken + PledgePool
+2. 配置 minter/手续费/创建测试池
+3. 将 owner 转移给多签 `0xDF39470F7c82e62174A06BE933B8D94c5A48Dc11`
+4. 保存合约地址到 `.sepolia-deployments.json`
+
+### 再次运行（跳过部署，仅验证）
+
+```shell
+npx hardhat test mocha test/pledgePool-sepolia.ts \
+  --network sepolia
+```
+
+检测到 `.sepolia-deployments.json` 时自动跳过部署，直接从链上读取合约状态并运行 14 个验证测试。
+
+### 强制重新部署
+
+```shell
+REDEPLOY=true npx hardhat test mocha test/pledgePool-sepolia.ts \
+  --network sepolia
+```
+
+### 多签操作验证
+
+部署完成后，运行脚本时会输出多签 `setFeeAddress` 操作指引，按提示在 <https://app.safe.global> 中执行：
+
+```
+Safe → New Transaction → Contract Interaction
+  目标合约: 0x...PledgePool 地址
+  方法:     setFeeAddress(address payable _feeAddress)
+  参数:     _feeAddress: 0x...手续费接收地址
+```
+
+执行后重新运行脚本，`验证多签 setFeeAddress 已生效` 测试会验证操作结果。
+
+### 环境变量
+
+| 变量 | 说明 |
+|------|------|
+| `REDEPLOY=true` | 强制重新部署 |
+| `DEPLOYMENTS_FILE=xxx.json` | 自定义部署记录路径（默认 `.sepolia-deployments.json`） |
+
 ## BSC 主网参考地址
 
 | 合约 | 地址 |
 |------|------|
 | PancakeSwap Router v2 | `0x10ED43C718714eb63d5aA57B78B54704E256024E` |
 | WBNB | `0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c` |
+
+
+## 提取ABI和BIN 后续用于后端连接 (需要合约已经编译了)
+```shell
+#在终端 pledge-sol目录下运行
+jq '.abi' artifacts/contracts/pledge/PledgePool.sol/PledgePool.json > PledgePool.abi  
+ 
+jq -r '.bytecode' artifacts/contracts/pledge/PledgePool.sol/PledgePool.json > PledgePool.bin
+```

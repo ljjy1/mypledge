@@ -3,3 +3,4 @@
 
 # 本地部署记录（由 test/pledgePool-sepolia.ts 自动生成）
 .sepolia-deployments.json
+/ignition/deployments/

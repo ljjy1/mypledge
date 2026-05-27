@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -38,11 +40,78 @@ type ContractHandler interface {
 	GetByID(c *gin.Context)
 	List(c *gin.Context)
 	Deploy(c *gin.Context)
+	CreatePool(c *gin.Context)
+
+	// PledgePool operations
+	PoolLend(c *gin.Context)
+	PoolBorrow(c *gin.Context)
+	PoolSettle(c *gin.Context)
+	PoolFinish(c *gin.Context)
+	PoolLiquidate(c *gin.Context)
+	PoolRefundBorrow(c *gin.Context)
+	PoolRefundLend(c *gin.Context)
+	PoolClaimBorrow(c *gin.Context)
+	PoolClaimLendDebtToken(c *gin.Context)
+	PoolDestroyBorrowDebtToken(c *gin.Context)
+	PoolDestroyLendDebtToken(c *gin.Context)
+	PoolSetFee(c *gin.Context)
+	PoolSetFeeAddress(c *gin.Context)
+	PoolSetOracle(c *gin.Context)
+	PoolSetSwapRouter(c *gin.Context)
+	PoolSetMinAmount(c *gin.Context)
+	PoolSetGlobalPaused(c *gin.Context)
+	PoolEmergencyWithdrawBorrow(c *gin.Context)
+	PoolEmergencyWithdrawLend(c *gin.Context)
+	PoolTransferOwnership(c *gin.Context)
+	PoolGetState(c *gin.Context)
+	PoolGetInfo(c *gin.Context)
+	PoolGetData(c *gin.Context)
+	PoolCheckCanSettle(c *gin.Context)
+	PoolCheckCanFinish(c *gin.Context)
+	PoolCheckCanLiquidate(c *gin.Context)
+	PoolGetConfig(c *gin.Context)
+
+	// BscPledgeOracle operations
+	OracleSetPrice(c *gin.Context)
+	OracleSetPrices(c *gin.Context)
+	OracleSetAggregator(c *gin.Context)
+	OracleTransferOwnership(c *gin.Context)
+	OracleGetPrice(c *gin.Context)
+
+	// DebtToken operations
+	DebtTokenMint(c *gin.Context)
+	DebtTokenBurn(c *gin.Context)
+	DebtTokenSetMinter(c *gin.Context)
+	DebtTokenBalanceOf(c *gin.Context)
+	DebtTokenTotalSupply(c *gin.Context)
+
+	// ERC20 operations
+	TokenApprove(c *gin.Context)
+	TokenTransfer(c *gin.Context)
+	TokenBalanceOf(c *gin.Context)
+	TokenAllowance(c *gin.Context)
+
+	// WETH operations
+	WETHDeposit(c *gin.Context)
+	WETHWithdraw(c *gin.Context)
+	WETHBalanceOf(c *gin.Context)
+
+	// UniswapV2Factory operations
+	FactoryCreatePair(c *gin.Context)
+	FactorySetFeeTo(c *gin.Context)
+	FactoryGetPair(c *gin.Context)
+
+	// UniswapV2Router02 operations
+	RouterAddLiquidity(c *gin.Context)
+	RouterSwapExactTokensForTokens(c *gin.Context)
+	RouterGetAmountsOut(c *gin.Context)
 }
 
 type contractHandler struct {
-	iDao     dao.ContractDao
-	tokenDao dao.TokenInfoDao
+	iDao         dao.ContractDao
+	tokenDao     dao.TokenInfoDao
+	poolbasesDao dao.PoolbasesDao
+	pooldataDao  dao.PooldataDao
 }
 
 // NewContractHandler creating the handler interface
@@ -55,6 +124,14 @@ func NewContractHandler() ContractHandler {
 		tokenDao: dao.NewTokenInfoDao(
 			database.GetDB(),
 			nil, // deploy 场景无需缓存
+		),
+		poolbasesDao: dao.NewPoolbasesDao(
+			database.GetDB(),
+			cache.NewPoolbasesCache(database.GetCacheType()),
+		),
+		pooldataDao: dao.NewPooldataDao(
+			database.GetDB(),
+			cache.NewPooldataCache(database.GetCacheType()),
 		),
 	}
 }
@@ -605,6 +682,247 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 
 	logger.Info("all contracts deployed successfully, PledgePool at", logger.String("address", poolAddr.Hex()))
 	response.Success(c, result)
+}
+
+// CreatePool 在已部署的 PledgePool 合约上创建借贷池
+// @Summary 创建借贷池
+// @Description 在已部署的 PledgePool 合约上创建新的借贷池，并将池子信息存入数据库。
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.CreatePoolRequest true "创建池子参数"
+// @Success 200 {object} types.CreatePoolReply{}
+// @Router /api/v1/contract/create-pool [post]
+// @Security BearerAuth
+func (h *contractHandler) CreatePool(c *gin.Context) {
+	form := &types.CreatePoolRequest{}
+	if err := c.ShouldBindJSON(form); err != nil {
+		response.Error(c, ecode.InvalidParams)
+		return
+	}
+
+	// 1. 连接 RPC 节点
+	client, err := ethclient.Dial(form.RpcURL)
+	if err != nil {
+		logger.Error("ethclient.Dial error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+	defer client.Close()
+
+	// 2. 从私钥创建钱包对象
+	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(form.PrivateKey, "0x"))
+	if err != nil {
+		logger.Error("crypto.HexToECDSA error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+
+	// 3. 获取 nonce、gas price 和 chain ID
+	nonce, err := client.PendingNonceAt(c, fromAddress)
+	if err != nil {
+		logger.Error("PendingNonceAt error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+	gasPrice, err := client.SuggestGasPrice(c)
+	if err != nil {
+		logger.Error("SuggestGasPrice error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+	chainID, err := client.ChainID(c)
+	if err != nil {
+		logger.Error("client.ChainID error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+
+	// 4. 创建交易签名器
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		logger.Error("NewKeyedTransactorWithChainID error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.GasPrice = gasPrice
+	auth.GasLimit = uint64(8000000)
+
+	// 5. 实例化 PledgePool 合约（绑定到已部署的地址）
+	poolContract, err := bindcode.NewPledgePool(common.HexToAddress(form.PoolContractAddress), client)
+	if err != nil {
+		logger.Error("NewPledgePool error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+
+	// 6. 构造 CreatePool 参数
+	settleTime := new(big.Int)
+	settleTime.SetString(form.SettleTime, 10)
+	endTime := new(big.Int)
+	endTime.SetString(form.EndTime, 10)
+	interestRate := new(big.Int)
+	interestRate.SetString(form.InterestRate, 10)
+	maxSupply := new(big.Int)
+	maxSupply.SetString(form.MaxSupply, 10)
+	mortgageRate := new(big.Int)
+	mortgageRate.SetString(form.MortgageRate, 10)
+	autoLiquidateThreshold := new(big.Int)
+	autoLiquidateThreshold.SetString(form.AutoLiquidateThreshold, 10)
+
+	params := bindcode.PledgePoolCreatePoolParams{
+		SettleTime:             settleTime,
+		EndTime:                endTime,
+		InterestRate:           interestRate,
+		MaxSupply:              maxSupply,
+		MortgageRate:           mortgageRate,
+		LendToken:              common.HexToAddress(form.LendToken),
+		BorrowToken:            common.HexToAddress(form.BorrowToken),
+		LendDebtToken:          common.HexToAddress(form.LendDebtToken),
+		BorrowDebtToken:        common.HexToAddress(form.BorrowDebtToken),
+		AutoLiquidateThreshold: autoLiquidateThreshold,
+	}
+
+	// 7. 调用合约的 createPledgePool
+	tx, err := poolContract.CreatePledgePool(auth, params)
+	if err != nil {
+		logger.Error("CreatePledgePool error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSend)
+		return
+	}
+
+	// 8. 等待交易确认
+	receipt, err := waitReceipt(c, client, tx)
+	if err != nil {
+		logger.Error("CreatePledgePool waitReceipt error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolReceipt)
+		return
+	}
+
+	// 9. 从 receipt 日志中解析 CreatePledgePool 事件获取 poolID
+	var poolID uint64
+	for _, log := range receipt.Logs {
+		event, err := poolContract.ParseCreatePledgePool(*log)
+		if err == nil {
+			poolID = event.Pid.Uint64()
+			break
+		}
+	}
+	if poolID == 0 {
+		logger.Error("ParseCreatePledgePool event not found in receipt logs")
+		response.Error(c, ecode.ErrCreatePoolEvent)
+		return
+	}
+	logger.Info("pool created on chain", logger.Uint64("poolID", poolID), logger.String("txHash", tx.Hash().Hex()))
+
+	// 10. 保存 poolbases 记录
+	ctx := middleware.WrapCtx(c)
+	poolbases := &model.Poolbases{
+		PoolID:                 int(poolID),
+		SettleTime:             form.SettleTime,
+		EndTime:                form.EndTime,
+		InterestRate:           form.InterestRate,
+		MaxSupply:              form.MaxSupply,
+		MortgageRate:           form.MortgageRate,
+		LendToken:              form.LendToken,
+		BorrowToken:            form.BorrowToken,
+		State:                  "1", // 1=进行中
+		LendDebtToken:          form.LendDebtToken,
+		BorrowDebtToken:        form.BorrowDebtToken,
+		AutoLiquidateThreshold: form.AutoLiquidateThreshold,
+		ChainID:                form.ChainID,
+		LendTokenSymbol:        form.LendTokenSymbol,
+		BorrowTokenSymbol:      form.BorrowTokenSymbol,
+	}
+	if err := h.poolbasesDao.Create(ctx, poolbases); err != nil {
+		logger.Error("poolbasesDao.Create error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSaveDB)
+		return
+	}
+
+	// 11. 保存 pooldata 记录（初始清算数据为零）
+	pooldata := &model.Pooldata{
+		ChainID: form.ChainID,
+		PoolID:  strconv.FormatUint(poolID, 10),
+	}
+	if err := h.pooldataDao.Create(ctx, pooldata); err != nil {
+		logger.Error("pooldataDao.Create error", logger.Err(err))
+		response.Error(c, ecode.ErrCreatePoolSaveDB)
+		return
+	}
+
+	response.Success(c, gin.H{
+		"poolID": poolID,
+		"txHash": tx.Hash().Hex(),
+	})
+}
+
+// prepareTransactor 创建签名交易器：连接RPC、加载私钥、获取nonce/gas/chainID
+func prepareTransactor(c *gin.Context, rpcURL, privateKey string) (
+	client *ethclient.Client,
+	auth *bind.TransactOpts,
+	chainID *big.Int,
+	cleanup func(),
+	err error,
+) {
+	client, err = ethclient.Dial(rpcURL)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	cleanup = func() { client.Close() }
+
+	privKey, err := crypto.HexToECDSA(strings.TrimPrefix(privateKey, "0x"))
+	if err != nil {
+		client.Close()
+		return nil, nil, nil, nil, err
+	}
+	fromAddr := crypto.PubkeyToAddress(privKey.PublicKey)
+
+	nonce, err := client.PendingNonceAt(c, fromAddr)
+	if err != nil {
+		client.Close()
+		return nil, nil, nil, nil, err
+	}
+	gasPrice, err := client.SuggestGasPrice(c)
+	if err != nil {
+		client.Close()
+		return nil, nil, nil, nil, err
+	}
+	chainID, err = client.ChainID(c)
+	if err != nil {
+		client.Close()
+		return nil, nil, nil, nil, err
+	}
+
+	auth, err = bind.NewKeyedTransactorWithChainID(privKey, chainID)
+	if err != nil {
+		client.Close()
+		return nil, nil, nil, nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.GasPrice = gasPrice
+	auth.GasLimit = uint64(8000000)
+	return client, auth, chainID, cleanup, nil
+}
+
+// prepareCaller 创建只读调用器
+func prepareCaller(rpcURL string) (*ethclient.Client, func(), error) {
+	client, err := ethclient.Dial(rpcURL)
+	if err != nil {
+		return nil, nil, err
+	}
+	return client, func() { client.Close() }, nil
+}
+
+// parseBigInt 安全地将字符串转为 *big.Int
+func parseBigInt(s string) (*big.Int, error) {
+	n := new(big.Int)
+	if _, ok := n.SetString(s, 10); !ok {
+		return nil, fmt.Errorf("invalid big int: %s", s)
+	}
+	return n, nil
 }
 
 func defaultAddr(addrStr string, fallback common.Address) common.Address {

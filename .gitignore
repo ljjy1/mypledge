@@ -42,3 +42,6 @@ go.work.sum
 /pledge-be/docs/openapi3.yaml
 /pledge-be/docs/swagger.json
 /pledge-be/docs/swagger.yaml
+/pledge-sol/abi-bin-json/files/
+/pledge-sol/abi-bin-go-code/files/
+/pledge-sol/abi-bin-go-code/gobind/

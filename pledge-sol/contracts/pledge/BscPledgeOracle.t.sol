@@ -475,7 +475,7 @@ contract BscPledgeOracleTest is SafeHelper {
     /**
      * @notice 测试未设置价格时返回 0
      */
-    function test_getPrice_returnsZeroForUnsetPrice() public {
+    function test_getPrice_returnsZeroForUnsetPrice() public view {
         assertEq(oracle.getPrice(ASSET_1), 0);
         assertEq(oracle.getUnderlyingPrice(UNDERLYING_1), 0);
     }
@@ -735,7 +735,7 @@ contract BscPledgeOracleTest is SafeHelper {
     /**
      * @notice 测试未设置聚合器时查询返回空值
      */
-    function test_getAssetsAggregator_returnsEmptyBeforeSet() public {
+    function test_getAssetsAggregator_returnsEmptyBeforeSet() public view {
         (address agg, uint256 decimals) = oracle.getAssetsAggregator(ASSET_1);
         assertEq(agg, address(0));
         assertEq(decimals, 0);
@@ -754,7 +754,7 @@ contract BscPledgeOracleTest is SafeHelper {
     /**
      * @notice 测试未设置前查询 underlying 聚合器返回空值
      */
-    function test_getUnderlyingAggregator_returnsEmptyBeforeSet() public {
+    function test_getUnderlyingAggregator_returnsEmptyBeforeSet() public view {
         (address agg, uint256 decimals) = oracle.getUnderlyingAggregator(UNDERLYING_1);
         assertEq(agg, address(0));
         assertEq(decimals, 0);

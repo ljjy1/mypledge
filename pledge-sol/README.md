@@ -8,6 +8,9 @@ npm install --legacy-peer-deps
 ## 测试
 
 ```shell
+#编译
+npx hardhat compile
+
 # 运行所有测试（solidity + mocha）
 npx hardhat test
 
@@ -214,4 +217,13 @@ Safe → New Transaction → Contract Interaction
 jq '.abi' artifacts/contracts/pledge/PledgePool.sol/PledgePool.json > PledgePool.abi  
  
 jq -r '.bytecode' artifacts/contracts/pledge/PledgePool.sol/PledgePool.json > PledgePool.bin
+```
+
+```shell
+#脚本生成 go合约绑定文件和对应abi和bin json 需要提前安装好jq和abigen
+#在终端 pledge-sol目录下运行
+# 默认 --pkg bindcode
+node abi-bin-go-code/extract.mjs
+# 自定义包名mycustompkg
+node abi-bin-go-code/extract.mjs mycustompkg
 ```

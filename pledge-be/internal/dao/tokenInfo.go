@@ -106,12 +106,7 @@ func (d *tokenInfoDao) updateDataByID(ctx context.Context, db *gorm.DB, table *m
 	if table.ChainID != "" {
 		update["chain_id"] = table.ChainID
 	}
-	if table.ContractAbi.String() != "" {
-		update["contract_abi"] = table.ContractAbi
-	}
-	if table.ContractBin.String() != "" {
-		update["contract_bin"] = table.ContractBin
-	}
+
 	if table.Decimals != 0 {
 		update["decimals"] = table.Decimals
 	}

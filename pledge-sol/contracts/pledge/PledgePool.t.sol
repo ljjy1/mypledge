@@ -319,7 +319,7 @@ contract PledgePoolTest is SafeHelper {
     /**
      * @notice 验证部署后 owner、oracle、swapRouter、feeAddress 等关键字段是否正确设置
      */
-    function test_deployment_setsOwnerOracleRouter() public {
+    function test_deployment_setsOwnerOracleRouter() public view {
         // owner 必须是 Safe 多签地址
         assertEq(pool.owner(), safeAddress);
         // oracle 地址
@@ -1022,7 +1022,7 @@ contract PledgePoolTest is SafeHelper {
     /**
      * @notice checkCanFinish 在 MATCH 状态下返回 false
      */
-    function test_checkFunctions_checkCanFinishFalseForMatch() public {
+    function test_checkFunctions_checkCanFinishFalseForMatch() public view {
         // 池子处于 MATCH 状态（未结算）
         assertFalse(pool.checkCanFinish(pid));
     }

@@ -100,12 +100,6 @@ func (d *contractDao) updateDataByID(ctx context.Context, db *gorm.DB, table *mo
 	if table.ContractAddress != "" {
 		update["contract_address"] = table.ContractAddress
 	}
-	if table.ContractAbi.String() != "" {
-		update["contract_abi"] = table.ContractAbi
-	}
-	if table.ContractBin.String() != "" {
-		update["contract_bin"] = table.ContractBin
-	}
 	if table.PublisherAddress != "" {
 		update["publisher_address"] = table.PublisherAddress
 	}

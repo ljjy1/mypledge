@@ -17,5 +17,11 @@ var (
 	ErrGetByIDContract    = errcode.NewError(contractBaseCode+4, "failed to get "+contractName+" details")
 	ErrListContract       = errcode.NewError(contractBaseCode+5, "failed to list of "+contractName)
 
+	ErrDeployRPCConn     = errcode.NewError(contractBaseCode+6, "连接RPC节点失败")
+	ErrDeployTxSign      = errcode.NewError(contractBaseCode+7, "交易签名失败")
+	ErrDeploySend        = errcode.NewError(contractBaseCode+8, "发送部署交易失败")
+	ErrDeployWaitReceipt = errcode.NewError(contractBaseCode+9, "等待交易确认超时")
+	ErrDeployInvalidAddr = errcode.NewError(contractBaseCode+10, "无效的地址参数")
+
 	// error codes are globally unique, adding 1 to the previous error code
 )

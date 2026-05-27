@@ -55,6 +55,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/contract/deploy": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "将完整的借贷合约套件部署到指定的区块链网络。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "部署所有合约",
+                "parameters": [
+                    {
+                        "description": "部署参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.DeployRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.DeployReply"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/contract/list": {
             "post": {
                 "security": [
@@ -1083,16 +1122,12 @@ const docTemplate = `{
                     "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
                     "type": "string"
                 },
-                "contractAbi": {
-                    "description": "合约ABI",
-                    "type": "string"
-                },
                 "contractAddress": {
                     "description": "合约地址",
                     "type": "string"
                 },
-                "contractBin": {
-                    "description": "合约BIN",
+                "contractName": {
+                    "description": "合约名称",
                     "type": "string"
                 },
                 "createdAt": {
@@ -1109,6 +1144,10 @@ const docTemplate = `{
                 },
                 "publisherAddress": {
                     "description": "合约发布者地址",
+                    "type": "string"
+                },
+                "txHash": {
+                    "description": "部署交易哈希",
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1147,16 +1186,12 @@ const docTemplate = `{
                     "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
                     "type": "string"
                 },
-                "contractAbi": {
-                    "description": "合约ABI",
-                    "type": "string"
-                },
                 "contractAddress": {
                     "description": "合约地址",
                     "type": "string"
                 },
-                "contractBin": {
-                    "description": "合约BIN",
+                "contractName": {
+                    "description": "合约名称",
                     "type": "string"
                 },
                 "nodeURL": {
@@ -1165,6 +1200,10 @@ const docTemplate = `{
                 },
                 "publisherAddress": {
                     "description": "合约发布者地址",
+                    "type": "string"
+                },
+                "txHash": {
+                    "description": "部署交易哈希",
                     "type": "string"
                 }
             }
@@ -1363,14 +1402,6 @@ const docTemplate = `{
                     "description": "链 ID: 56=BSC 97=测试网",
                     "type": "string"
                 },
-                "contractAbi": {
-                    "description": "代币ABI",
-                    "type": "string"
-                },
-                "contractBin": {
-                    "description": "代币BIN",
-                    "type": "string"
-                },
                 "decimals": {
                     "description": "代币精度(小数位数)",
                     "type": "integer"
@@ -1514,6 +1545,125 @@ const docTemplate = `{
                 },
                 "msg": {
                     "description": "return information description",
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeployContractItem": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "txHash": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeployData": {
+            "type": "object",
+            "properties": {
+                "chainName": {
+                    "type": "string"
+                },
+                "contracts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.DeployContractItem"
+                    }
+                },
+                "deployer": {
+                    "type": "string"
+                },
+                "pledgePoolAddr": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeployReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.DeployData"
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.DeployRequest": {
+            "type": "object",
+            "required": [
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "borrowTokenName": {
+                    "description": "MockBorrowToken 名称",
+                    "type": "string"
+                },
+                "borrowTokenSym": {
+                    "description": "MockBorrowToken 符号",
+                    "type": "string"
+                },
+                "chainName": {
+                    "description": "链名称（如 hardhat）",
+                    "type": "string"
+                },
+                "debtTokenName": {
+                    "description": "债务代币名称",
+                    "type": "string"
+                },
+                "debtTokenSym": {
+                    "description": "债务代币符号",
+                    "type": "string"
+                },
+                "factoryFeeTo": {
+                    "description": "Factory feeToSetter（默认部署者地址）",
+                    "type": "string"
+                },
+                "feeAddress": {
+                    "description": "手续费接收地址（默认部署者地址）",
+                    "type": "string"
+                },
+                "lendTokenName": {
+                    "description": "MockLendToken 名称",
+                    "type": "string"
+                },
+                "lendTokenSym": {
+                    "description": "MockLendToken 符号",
+                    "type": "string"
+                },
+                "oracleOwner": {
+                    "description": "BscPledgeOracle owner（默认部署者地址）",
+                    "type": "string"
+                },
+                "poolOwner": {
+                    "description": "PledgePool owner（默认部署者地址）",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "部署者私钥（必填）",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL（必填）",
+                    "type": "string"
+                },
+                "tokenSupply": {
+                    "description": "MockToken 初始发行量",
                     "type": "string"
                 }
             }
@@ -2011,14 +2161,6 @@ const docTemplate = `{
                     "description": "链 ID: 56=BSC 97=测试网",
                     "type": "string"
                 },
-                "contractAbi": {
-                    "description": "代币ABI",
-                    "type": "string"
-                },
-                "contractBin": {
-                    "description": "代币BIN",
-                    "type": "string"
-                },
                 "createdAt": {
                     "description": "创建时间",
                     "type": "string"
@@ -2077,16 +2219,12 @@ const docTemplate = `{
                     "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
                     "type": "string"
                 },
-                "contractAbi": {
-                    "description": "合约ABI",
-                    "type": "string"
-                },
                 "contractAddress": {
                     "description": "合约地址",
                     "type": "string"
                 },
-                "contractBin": {
-                    "description": "合约BIN",
+                "contractName": {
+                    "description": "合约名称",
                     "type": "string"
                 },
                 "id": {
@@ -2099,6 +2237,10 @@ const docTemplate = `{
                 },
                 "publisherAddress": {
                     "description": "合约发布者地址",
+                    "type": "string"
+                },
+                "txHash": {
+                    "description": "部署交易哈希",
                     "type": "string"
                 }
             }
@@ -2285,14 +2427,6 @@ const docTemplate = `{
             "properties": {
                 "chainID": {
                     "description": "链 ID: 56=BSC 97=测试网",
-                    "type": "string"
-                },
-                "contractAbi": {
-                    "description": "代币ABI",
-                    "type": "string"
-                },
-                "contractBin": {
-                    "description": "代币BIN",
                     "type": "string"
                 },
                 "decimals": {

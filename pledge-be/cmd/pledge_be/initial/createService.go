@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"pledge-be/internal/config"
+	"pledge-be/internal/schedule"
 	"pledge-be/internal/server"
 
 	"github.com/go-dev-frame/sponge/pkg/app"
@@ -21,6 +22,9 @@ func CreateServices() []app.IServer {
 		server.WithHTTPTLS(cfg.HTTP.TLS),
 	)
 	servers = append(servers, httpServer)
+
+	// create a schedule service (asynq scheduler + server)
+	servers = append(servers, schedule.NewScheduleServer())
 
 	return servers
 }

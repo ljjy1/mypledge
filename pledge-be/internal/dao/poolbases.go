@@ -18,16 +18,24 @@ import (
 
 var _ PoolbasesDao = (*poolbasesDao)(nil)
 
-// PoolbasesDao defining the dao interface
+// PoolbasesDao 资金池数据访问接口
 type PoolbasesDao interface {
+	// Create 创建资金池记录
 	Create(ctx context.Context, table *model.Poolbases) error
+	// DeleteByID 根据 ID 删除资金池
 	DeleteByID(ctx context.Context, id uint64) error
+	// UpdateByID 根据 ID 更新资金池（支持部分更新）
 	UpdateByID(ctx context.Context, table *model.Poolbases) error
+	// GetByID 根据 ID 获取资金池
 	GetByID(ctx context.Context, id uint64) (*model.Poolbases, error)
+	// GetByColumns 按条件分页查询资金池列表
 	GetByColumns(ctx context.Context, params *query.Params) ([]*model.Poolbases, int64, error)
 
+	// CreateByTx 在事务中创建资金池记录
 	CreateByTx(ctx context.Context, tx *gorm.DB, table *model.Poolbases) (uint64, error)
+	// DeleteByTx 在事务中根据 ID 删除资金池
 	DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error
+	// UpdateByTx 在事务中根据 ID 更新资金池
 	UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.Poolbases) error
 }
 
@@ -37,7 +45,7 @@ type poolbasesDao struct {
 	sfg   *singleflight.Group  // if cache is nil, the sfg is not used.
 }
 
-// NewPoolbasesDao creating the dao interface
+// NewPoolbasesDao 创建资金池数据访问实例，可选传入缓存以实现缓存读写
 func NewPoolbasesDao(db *gorm.DB, xCache cache.PoolbasesCache) PoolbasesDao {
 	if xCache == nil {
 		return &poolbasesDao{db: db}
@@ -49,6 +57,7 @@ func NewPoolbasesDao(db *gorm.DB, xCache cache.PoolbasesCache) PoolbasesDao {
 	}
 }
 
+// deleteCache 删除资金池缓存（如果缓存实例不为 nil）
 func (d *poolbasesDao) deleteCache(ctx context.Context, id uint64) error {
 	if d.cache != nil {
 		return d.cache.Del(ctx, id)
@@ -56,12 +65,12 @@ func (d *poolbasesDao) deleteCache(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// Create a new poolbases, insert the record and the id value is written back to the table
+// Create 创建资金池记录，插入后 ID 值会回写到传入的 table 参数中
 func (d *poolbasesDao) Create(ctx context.Context, table *model.Poolbases) error {
 	return d.db.WithContext(ctx).Create(table).Error
 }
 
-// DeleteByID delete a poolbases by id
+// DeleteByID 根据 ID 删除资金池记录，同时清除对应的缓存
 func (d *poolbasesDao) DeleteByID(ctx context.Context, id uint64) error {
 	err := d.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Poolbases{}).Error
 	if err != nil {
@@ -74,7 +83,7 @@ func (d *poolbasesDao) DeleteByID(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// UpdateByID update a poolbases by id, support partial update
+// UpdateByID 根据 ID 更新资金池记录（只更新非零字段），同时清除缓存
 func (d *poolbasesDao) UpdateByID(ctx context.Context, table *model.Poolbases) error {
 	err := d.updateDataByID(ctx, d.db, table)
 
@@ -84,6 +93,7 @@ func (d *poolbasesDao) UpdateByID(ctx context.Context, table *model.Poolbases) e
 	return err
 }
 
+// updateDataByID 根据 ID 更新资金池数据，只将非空字段加入更新 map
 func (d *poolbasesDao) updateDataByID(ctx context.Context, db *gorm.DB, table *model.Poolbases) error {
 	if table.ID < 1 {
 		return errors.New("id cannot be 0")
@@ -152,7 +162,7 @@ func (d *poolbasesDao) updateDataByID(ctx context.Context, db *gorm.DB, table *m
 	return db.WithContext(ctx).Model(table).Updates(update).Error
 }
 
-// GetByID get a poolbases by id
+// GetByID 根据 ID 获取资金池，优先从缓存读取，缓存未命中则查数据库并回写缓存，使用 singleflight 防止缓存击穿
 func (d *poolbasesDao) GetByID(ctx context.Context, id uint64) (*model.Poolbases, error) {
 	// no cache
 	if d.cache == nil {
@@ -206,8 +216,8 @@ func (d *poolbasesDao) GetByID(ctx context.Context, id uint64) (*model.Poolbases
 	return nil, err
 }
 
-// GetByColumns get a paginated list of poolbasess by custom conditions.
-// For more details, please refer to https://go-sponge.com/component/data/custom-page-query.html
+// GetByColumns 按自定义条件分页查询资金池列表，支持排序和分页参数。
+// 详见 https://go-sponge.com/component/data/custom-page-query.html
 func (d *poolbasesDao) GetByColumns(ctx context.Context, params *query.Params) ([]*model.Poolbases, int64, error) {
 	queryStr, args, err := params.ConvertToGormConditions(query.WithWhitelistNames(model.PoolbasesColumnNames))
 	if err != nil {
@@ -235,13 +245,13 @@ func (d *poolbasesDao) GetByColumns(ctx context.Context, params *query.Params) (
 	return records, total, err
 }
 
-// CreateByTx create a record in the database using the provided transaction
+// CreateByTx 在给定事务中创建资金池记录，返回记录 ID
 func (d *poolbasesDao) CreateByTx(ctx context.Context, tx *gorm.DB, table *model.Poolbases) (uint64, error) {
 	err := tx.WithContext(ctx).Create(table).Error
 	return table.ID, err
 }
 
-// DeleteByTx delete a record by id in the database using the provided transaction
+// DeleteByTx 在给定事务中根据 ID 删除资金池记录，同时清除缓存
 func (d *poolbasesDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error {
 	err := tx.WithContext(ctx).Where("id = ?", id).Delete(&model.Poolbases{}).Error
 	if err != nil {
@@ -254,7 +264,7 @@ func (d *poolbasesDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) e
 	return nil
 }
 
-// UpdateByTx update a record by id in the database using the provided transaction
+// UpdateByTx 在给定事务中根据 ID 更新资金池记录，同时清除缓存
 func (d *poolbasesDao) UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.Poolbases) error {
 	err := d.updateDataByID(ctx, tx, table)
 

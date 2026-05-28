@@ -17,29 +17,36 @@ import (
 const (
 	// cache prefix key, must end with a colon
 	poolbasesCachePrefixKey = "poolbases:"
-	// PoolbasesExpireTime expire time
+	// PoolbasesExpireTime 资金池缓存过期时间
 	PoolbasesExpireTime = 5 * time.Minute
 )
 
 var _ PoolbasesCache = (*poolbasesCache)(nil)
 
-// PoolbasesCache cache interface
+// PoolbasesCache 资金池缓存接口
 type PoolbasesCache interface {
+	// Set 设置资金池缓存
 	Set(ctx context.Context, id uint64, data *model.Poolbases, duration time.Duration) error
+	// Get 获取资金池缓存
 	Get(ctx context.Context, id uint64) (*model.Poolbases, error)
+	// MultiGet 批量获取资金池缓存
 	MultiGet(ctx context.Context, ids []uint64) (map[uint64]*model.Poolbases, error)
+	// MultiSet 批量设置资金池缓存
 	MultiSet(ctx context.Context, data []*model.Poolbases, duration time.Duration) error
+	// Del 删除资金池缓存
 	Del(ctx context.Context, id uint64) error
+	// SetPlaceholder 设置占位符缓存（防止缓存穿透）
 	SetPlaceholder(ctx context.Context, id uint64) error
+	// IsPlaceholderErr 判断是否为占位符错误
 	IsPlaceholderErr(err error) bool
 }
 
-// poolbasesCache define a cache struct
+// poolbasesCache 资金池缓存结构体
 type poolbasesCache struct {
 	cache cache.Cache
 }
 
-// NewPoolbasesCache new a cache
+// NewPoolbasesCache 创建资金池缓存实例，根据 cacheType 选择 Redis 或 Memory 缓存
 func NewPoolbasesCache(cacheType *database.CacheType) PoolbasesCache {
 	jsonEncoding := encoding.JSONEncoding{}
 	cachePrefix := ""
@@ -61,12 +68,12 @@ func NewPoolbasesCache(cacheType *database.CacheType) PoolbasesCache {
 	return nil // no cache
 }
 
-// GetPoolbasesCacheKey cache key
+// GetPoolbasesCacheKey 获取资金池缓存键
 func (c *poolbasesCache) GetPoolbasesCacheKey(id uint64) string {
 	return poolbasesCachePrefixKey + utils.Uint64ToStr(id)
 }
 
-// Set write to cache
+// Set 将资金池数据写入缓存
 func (c *poolbasesCache) Set(ctx context.Context, id uint64, data *model.Poolbases, duration time.Duration) error {
 	if data == nil || id == 0 {
 		return nil
@@ -79,7 +86,7 @@ func (c *poolbasesCache) Set(ctx context.Context, id uint64, data *model.Poolbas
 	return nil
 }
 
-// Get cache value
+// Get 从缓存读取资金池数据
 func (c *poolbasesCache) Get(ctx context.Context, id uint64) (*model.Poolbases, error) {
 	var data *model.Poolbases
 	cacheKey := c.GetPoolbasesCacheKey(id)
@@ -90,7 +97,7 @@ func (c *poolbasesCache) Get(ctx context.Context, id uint64) (*model.Poolbases, 
 	return data, nil
 }
 
-// MultiSet multiple set cache
+// MultiSet 批量写入资金池数据到缓存
 func (c *poolbasesCache) MultiSet(ctx context.Context, data []*model.Poolbases, duration time.Duration) error {
 	valMap := make(map[string]interface{})
 	for _, v := range data {
@@ -106,7 +113,7 @@ func (c *poolbasesCache) MultiSet(ctx context.Context, data []*model.Poolbases, 
 	return nil
 }
 
-// MultiGet multiple get cache, return key in map is id value
+// MultiGet 批量从缓存读取资金池数据，返回 map 的 key 为 id 值
 func (c *poolbasesCache) MultiGet(ctx context.Context, ids []uint64) (map[uint64]*model.Poolbases, error) {
 	var keys []string
 	for _, v := range ids {
@@ -131,7 +138,7 @@ func (c *poolbasesCache) MultiGet(ctx context.Context, ids []uint64) (map[uint64
 	return retMap, nil
 }
 
-// Del delete cache
+// Del 删除资金池缓存
 func (c *poolbasesCache) Del(ctx context.Context, id uint64) error {
 	cacheKey := c.GetPoolbasesCacheKey(id)
 	err := c.cache.Del(ctx, cacheKey)
@@ -141,13 +148,13 @@ func (c *poolbasesCache) Del(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// SetPlaceholder set placeholder value to cache
+// SetPlaceholder 将占位符值写入缓存，用于防止缓存穿透（空值缓存）
 func (c *poolbasesCache) SetPlaceholder(ctx context.Context, id uint64) error {
 	cacheKey := c.GetPoolbasesCacheKey(id)
 	return c.cache.SetCacheWithNotFound(ctx, cacheKey)
 }
 
-// IsPlaceholderErr check if cache is placeholder error
+// IsPlaceholderErr 判断错误是否为缓存占位符错误
 func (c *poolbasesCache) IsPlaceholderErr(err error) bool {
 	return errors.Is(err, cache.ErrPlaceholder)
 }

@@ -31,7 +31,7 @@ type Poolbases struct {
 	UpdatedAt              *time.Time      `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;not null" json:"updatedAt"` // 更新时间
 }
 
-// PoolbasesColumnNames Whitelist for custom query fields to prevent sql injection attacks
+// PoolbasesColumnNames 自定义查询字段白名单，防止 SQL 注入攻击
 var PoolbasesColumnNames = map[string]bool{
 	"id":                       true,
 	"pool_id":                  true,

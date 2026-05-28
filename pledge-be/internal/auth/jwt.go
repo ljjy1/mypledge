@@ -6,6 +6,7 @@ import (
 	"github.com/go-dev-frame/sponge/pkg/jwt"
 )
 
+// signKey JWT 签名密钥（硬编码，生产环境建议通过配置管理）
 const signKey = "pledge-be-jwt-secret-key"
 
 // GenerateToken 生成 JWT token

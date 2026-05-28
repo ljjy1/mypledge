@@ -21,7 +21,7 @@ import (
 
 var _ PoolbasesHandler = (*poolbasesHandler)(nil)
 
-// PoolbasesHandler defining the handler interface
+// PoolbasesHandler 借贷池基础信息处理器接口
 type PoolbasesHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
@@ -30,11 +30,12 @@ type PoolbasesHandler interface {
 	List(c *gin.Context)
 }
 
+// poolbasesHandler 借贷池基础信息数据处理实现
 type poolbasesHandler struct {
 	iDao dao.PoolbasesDao
 }
 
-// NewPoolbasesHandler creating the handler interface
+// NewPoolbasesHandler 创建借贷池基础信息处理器实例
 func NewPoolbasesHandler() PoolbasesHandler {
 	return &poolbasesHandler{
 		iDao: dao.NewPoolbasesDao(
@@ -44,7 +45,7 @@ func NewPoolbasesHandler() PoolbasesHandler {
 	}
 }
 
-// Create a new poolbases
+// Create 创建新的借贷池基础信息记录
 // @Summary Create a new poolbases
 // @Description Creates a new poolbases entity using the provided data in the request body.
 // @Tags poolbases
@@ -82,7 +83,7 @@ func (h *poolbasesHandler) Create(c *gin.Context) {
 	response.Success(c, gin.H{"id": poolbases.ID})
 }
 
-// DeleteByID delete a poolbases by id
+// DeleteByID 根据 ID 删除借贷池基础信息记录
 // @Summary Delete a poolbases by id
 // @Description Deletes a existing poolbases identified by the given id in the path.
 // @Tags poolbases
@@ -110,7 +111,7 @@ func (h *poolbasesHandler) DeleteByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// UpdateByID update a poolbases by id
+// UpdateByID 根据 ID 更新借贷池基础信息记录
 // @Summary Update a poolbases by id
 // @Description Updates the specified poolbases by given id in the path, support partial update.
 // @Tags poolbases
@@ -156,7 +157,7 @@ func (h *poolbasesHandler) UpdateByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetByID get a poolbases by id
+// GetByID 根据 ID 查询借贷池基础信息记录
 // @Summary Get a poolbases by id
 // @Description Gets detailed information of a poolbases specified by the given id in the path.
 // @Tags poolbases
@@ -197,7 +198,7 @@ func (h *poolbasesHandler) GetByID(c *gin.Context) {
 	response.Success(c, gin.H{"poolbases": data})
 }
 
-// List get a paginated list of poolbasess by custom conditions
+// List 分页查询借贷池基础信息列表，支持自定义筛选条件
 // @Summary Get a paginated list of poolbasess by custom conditions
 // @Description Returns a paginated list of poolbases based on query filters, including page number and size.
 // @Tags poolbases
@@ -236,6 +237,7 @@ func (h *poolbasesHandler) List(c *gin.Context) {
 	})
 }
 
+// getPoolbasesIDFromPath 从请求路径中解析借贷池基础信息 ID，返回 (id字符串, id数值, 是否应中止请求)
 func getPoolbasesIDFromPath(c *gin.Context) (string, uint64, bool) {
 	idStr := c.Param("id")
 	id, err := utils.StrToUint64E(idStr)
@@ -247,6 +249,7 @@ func getPoolbasesIDFromPath(c *gin.Context) (string, uint64, bool) {
 	return idStr, id, false
 }
 
+// convertPoolbases 将模型层的 Poolbases 结构体转换为响应层结构体
 func convertPoolbases(poolbases *model.Poolbases) (*types.PoolbasesObjDetail, error) {
 	data := &types.PoolbasesObjDetail{}
 	err := copier.Copy(data, poolbases)
@@ -258,6 +261,7 @@ func convertPoolbases(poolbases *model.Poolbases) (*types.PoolbasesObjDetail, er
 	return data, nil
 }
 
+// convertPoolbasess 将模型层的 Poolbases 列表批量转换为响应层结构体
 func convertPoolbasess(fromValues []*model.Poolbases) ([]*types.PoolbasesObjDetail, error) {
 	toValues := []*types.PoolbasesObjDetail{}
 	for _, v := range fromValues {

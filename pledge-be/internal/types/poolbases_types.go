@@ -10,7 +10,7 @@ var _ time.Time
 
 // Tip: suggested filling in the binding rules https://github.com/go-playground/validator in request struct fields tag.
 
-// CreatePoolbasesRequest request params
+// CreatePoolbasesRequest 创建池子基础信息请求参数
 type CreatePoolbasesRequest struct {
 	PoolID                 int    `json:"poolID" binding:""`                 // 业务池子 ID，与链上 pool 对应
 	SettleTime             string `json:"settleTime" binding:""`             // 结算开始时间戳
@@ -33,7 +33,7 @@ type CreatePoolbasesRequest struct {
 	BorrowTokenSymbol      string `json:"borrowTokenSymbol" binding:""`      // 借入(抵押)代币符号，如 BTC
 }
 
-// UpdatePoolbasesByIDRequest request params
+// UpdatePoolbasesByIDRequest 更新池子基础信息请求参数
 type UpdatePoolbasesByIDRequest struct {
 	ID uint64 `json:"id" binding:""` // uint64 id
 	// 主键ID
@@ -58,7 +58,7 @@ type UpdatePoolbasesByIDRequest struct {
 	BorrowTokenSymbol      string `json:"borrowTokenSymbol" binding:""`      // 借入(抵押)代币符号，如 BTC
 }
 
-// PoolbasesObjDetail detail
+// PoolbasesObjDetail 池子基础信息详情
 type PoolbasesObjDetail struct {
 	ID uint64 `json:"id"` // convert to uint64 id
 	// 主键ID
@@ -85,7 +85,7 @@ type PoolbasesObjDetail struct {
 	UpdatedAt              *time.Time `json:"updatedAt"`              // 更新时间
 }
 
-// CreatePoolbasesReply only for api docs
+// CreatePoolbasesReply 仅用于 API 文档
 type CreatePoolbasesReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -94,21 +94,21 @@ type CreatePoolbasesReply struct {
 	} `json:"data"` // return data
 }
 
-// DeletePoolbasesByIDReply only for api docs
+// DeletePoolbasesByIDReply 仅用于 API 文档
 type DeletePoolbasesByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// UpdatePoolbasesByIDReply only for api docs
+// UpdatePoolbasesByIDReply 仅用于 API 文档
 type UpdatePoolbasesByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// GetPoolbasesByIDReply only for api docs
+// GetPoolbasesByIDReply 仅用于 API 文档
 type GetPoolbasesByIDReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -117,12 +117,12 @@ type GetPoolbasesByIDReply struct {
 	} `json:"data"` // return data
 }
 
-// ListPoolbasessRequest request params
+// ListPoolbasessRequest 查询池子基础信息列表请求参数
 type ListPoolbasessRequest struct {
 	query.Params
 }
 
-// ListPoolbasessReply only for api docs
+// ListPoolbasessReply 仅用于 API 文档
 type ListPoolbasessReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description

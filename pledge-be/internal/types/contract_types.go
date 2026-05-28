@@ -10,7 +10,7 @@ var _ time.Time
 
 // Tip: suggested filling in the binding rules https://github.com/go-playground/validator in request struct fields tag.
 
-// CreateContractRequest request params
+// CreateContractRequest 创建合约请求参数
 type CreateContractRequest struct {
 	NodeURL          string `json:"nodeURL" binding:""`          // 合约发布网站地址，如127.0.0.1:8454
 	ChainID          string `json:"chainID" binding:""`          // 链 ID: 56=BSC 主网 97=BSC 测试网
@@ -20,7 +20,7 @@ type CreateContractRequest struct {
 	PublisherAddress string `json:"publisherAddress" binding:""` // 合约发布者地址
 }
 
-// UpdateContractByIDRequest request params
+// UpdateContractByIDRequest 更新合约请求参数
 type UpdateContractByIDRequest struct {
 	ID uint64 `json:"id" binding:""` // uint64 id
 	// 主键ID
@@ -32,7 +32,7 @@ type UpdateContractByIDRequest struct {
 	PublisherAddress string `json:"publisherAddress" binding:""` // 合约发布者地址
 }
 
-// ContractObjDetail detail
+// ContractObjDetail 合约详情
 type ContractObjDetail struct {
 	ID uint64 `json:"id"` // convert to uint64 id
 	// 主键ID
@@ -46,7 +46,7 @@ type ContractObjDetail struct {
 	UpdatedAt        *time.Time `json:"updatedAt"`        // 更新时间
 }
 
-// CreateContractReply only for api docs
+// CreateContractReply 仅用于 API 文档
 type CreateContractReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -55,21 +55,21 @@ type CreateContractReply struct {
 	} `json:"data"` // return data
 }
 
-// DeleteContractByIDReply only for api docs
+// DeleteContractByIDReply 仅用于 API 文档
 type DeleteContractByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// UpdateContractByIDReply only for api docs
+// UpdateContractByIDReply 仅用于 API 文档
 type UpdateContractByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// GetContractByIDReply only for api docs
+// GetContractByIDReply 仅用于 API 文档
 type GetContractByIDReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -78,12 +78,12 @@ type GetContractByIDReply struct {
 	} `json:"data"` // return data
 }
 
-// ListContractsRequest request params
+// ListContractsRequest 查询合约列表请求参数
 type ListContractsRequest struct {
 	query.Params
 }
 
-// ListContractsReply only for api docs
+// ListContractsReply 仅用于 API 文档
 type ListContractsReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description

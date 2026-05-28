@@ -712,7 +712,7 @@ func (h *contractHandler) PoolTransferOwnership(c *gin.Context) {
 	response.Success(c, gin.H{"txHash": tx.Hash().Hex()})
 }
 
-// ==================== PledgePool Read Operations ====================
+// ==================== PledgePool 只读操作 ====================
 
 // PoolGetState 查询池子状态
 func (h *contractHandler) PoolGetState(c *gin.Context) {
@@ -946,6 +946,8 @@ func (h *contractHandler) PoolCheckCanLiquidate(c *gin.Context) {
 }
 
 // PoolGetConfig 查询池子全局配置
+// 依次调用合约的多个只读方法获取全局配置信息，包括：
+// 预言机地址、手续费地址、DEX路由地址、出借费率、借入费率、最小金额、合约所有者
 func (h *contractHandler) PoolGetConfig(c *gin.Context) {
 	form := &types.PoolReadRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -966,39 +968,46 @@ func (h *contractHandler) PoolGetConfig(c *gin.Context) {
 		return
 	}
 
+	// 查询预言机地址
 	oracle, err := poolContract.Oracle(nil)
 	if err != nil {
 		logger.Error("PoolGetConfig Oracle error", logger.Err(err))
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询手续费接收地址
 	feeAddr, err := poolContract.FeeAddress(nil)
 	if err != nil {
 		logger.Error("PoolGetConfig FeeAddress error", logger.Err(err))
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询 DEX 路由合约地址
 	swapRouter, err := poolContract.SwapRouter(nil)
 	if err != nil {
 		logger.Error("PoolGetConfig SwapRouter error", logger.Err(err))
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询出借手续费率
 	lendFee, err := poolContract.LendFee(nil)
 	if err != nil {
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询借入手续费率
 	borrowFee, err := poolContract.BorrowFee(nil)
 	if err != nil {
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询最小操作金额
 	minAmount, err := poolContract.MinAmount(nil)
 	if err != nil {
 		response.Error(c, ecode.ErrPoolReadCall)
 		return
 	}
+	// 查询合约所有者地址
 	owner, err := poolContract.Owner(nil)
 	if err != nil {
 		response.Error(c, ecode.ErrPoolReadCall)

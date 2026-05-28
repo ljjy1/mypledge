@@ -17,11 +17,13 @@ import (
 )
 
 var (
-	version    string
+	// version 通过命令行 -version 参数传入的服务版本号
+	version string
+	// configFile 通过命令行 -c 参数传入的配置文件路径
 	configFile string
 )
 
-// InitApp initial app configuration
+// InitApp 初始化应用配置，包括日志、链路追踪、资源统计和数据库连接
 func InitApp() {
 	initConfig()
 	cfg := config.Get()
@@ -77,6 +79,7 @@ func InitApp() {
 	}
 }
 
+// initConfig 解析命令行参数并加载本地配置文件
 func initConfig() {
 	flag.StringVar(&version, "version", "", "service Version Number")
 	flag.StringVar(&configFile, "c", "", "configuration file")
@@ -89,7 +92,7 @@ func initConfig() {
 	}
 }
 
-// get configuration from local configuration file
+// getConfigFromLocal 从本地 yml 配置文件加载配置，若未指定则使用默认路径
 func getConfigFromLocal() {
 	if configFile == "" {
 		configFile = configs.Location("pledge_be.yml")

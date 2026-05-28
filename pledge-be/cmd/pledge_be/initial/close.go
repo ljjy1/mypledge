@@ -12,7 +12,7 @@ import (
 	"pledge-be/internal/database"
 )
 
-// Close releasing resources after service exit
+// Close 收集所有服务退出时需要释放的资源关闭函数（服务关闭、数据库、Redis、链路追踪、日志）
 func Close(servers []app.IServer) []app.Close {
 	var closes []app.Close
 

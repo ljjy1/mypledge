@@ -10,14 +10,14 @@ var _ time.Time
 
 // Tip: suggested filling in the binding rules https://github.com/go-playground/validator in request struct fields tag.
 
-// CreateUserRequest request params
+// CreateUserRequest 创建用户请求参数
 type CreateUserRequest struct {
 	Login    string `json:"login" binding:""`    // 用户账号
 	Nike     string `json:"nike" binding:""`     // 用户昵称
 	Password string `json:"password" binding:""` // 加密后的密码
 }
 
-// UpdateUserByIDRequest request params
+// UpdateUserByIDRequest 更新用户请求参数
 type UpdateUserByIDRequest struct {
 	ID uint64 `json:"id" binding:""` // uint64 id
 
@@ -26,7 +26,7 @@ type UpdateUserByIDRequest struct {
 	Password string `json:"password" binding:""` // 加密后的密码
 }
 
-// UserObjDetail detail
+// UserObjDetail 用户详情
 type UserObjDetail struct {
 	ID uint64 `json:"id"` // convert to uint64 id
 
@@ -35,7 +35,7 @@ type UserObjDetail struct {
 	Password string `json:"password"` // 加密后的密码
 }
 
-// CreateUserReply only for api docs
+// CreateUserReply 仅用于 API 文档
 type CreateUserReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -44,21 +44,21 @@ type CreateUserReply struct {
 	} `json:"data"` // return data
 }
 
-// DeleteUserByIDReply only for api docs
+// DeleteUserByIDReply 仅用于 API 文档
 type DeleteUserByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// UpdateUserByIDReply only for api docs
+// UpdateUserByIDReply 仅用于 API 文档
 type UpdateUserByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// GetUserByIDReply only for api docs
+// GetUserByIDReply 仅用于 API 文档
 type GetUserByIDReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -67,19 +67,19 @@ type GetUserByIDReply struct {
 	} `json:"data"` // return data
 }
 
-// ListUsersRequest request params
+// ListUsersRequest 查询用户列表请求参数
 type ListUsersRequest struct {
 	query.Params
 }
 
-// RegisterRequest request params
+// RegisterRequest 用户注册请求参数
 type RegisterRequest struct {
 	Login    string `json:"login" binding:"required"`    // 用户账号 (3-10位字母或数字)
 	Password string `json:"password" binding:"required"` // 密码 (8-20位)
 	Nike     string `json:"nike" binding:"required"`     // 用户昵称 (1-12位)
 }
 
-// RegisterReply only for api docs
+// RegisterReply 仅用于 API 文档
 type RegisterReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -88,13 +88,13 @@ type RegisterReply struct {
 	} `json:"data"` // return data
 }
 
-// LoginRequest request params
+// LoginRequest 用户登录请求参数
 type LoginRequest struct {
 	Login    string `json:"login" binding:"required"`    // 用户账号
 	Password string `json:"password" binding:"required"` // 密码
 }
 
-// LoginReply only for api docs
+// LoginReply 仅用于 API 文档
 type LoginReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -103,7 +103,7 @@ type LoginReply struct {
 	} `json:"data"` // return data
 }
 
-// ListUsersReply only for api docs
+// ListUsersReply 仅用于 API 文档
 type ListUsersReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description

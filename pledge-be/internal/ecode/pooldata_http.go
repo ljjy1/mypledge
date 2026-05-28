@@ -4,8 +4,8 @@ import (
 	"github.com/go-dev-frame/sponge/pkg/errcode"
 )
 
-// pooldata business-level http error codes.
-// the pooldataNO value range is 1~999, if the same error code is used, it will cause panic.
+// pooldata 业务层 HTTP 错误码定义。
+// pooldataNO 的取值范围为 1~999，若使用了重复的错误码将触发 panic。
 var (
 	pooldataNO       = 88
 	pooldataName     = "pooldata"
@@ -17,5 +17,5 @@ var (
 	ErrGetByIDPooldata    = errcode.NewError(pooldataBaseCode+4, "failed to get "+pooldataName+" details")
 	ErrListPooldata       = errcode.NewError(pooldataBaseCode+5, "failed to list of "+pooldataName)
 
-	// error codes are globally unique, adding 1 to the previous error code
+	// 错误码全局唯一，请在上一个错误码基础上加 1
 )

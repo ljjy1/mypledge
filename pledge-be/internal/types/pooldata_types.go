@@ -10,7 +10,7 @@ var _ time.Time
 
 // Tip: suggested filling in the binding rules https://github.com/go-playground/validator in request struct fields tag.
 
-// CreatePooldataRequest request params
+// CreatePooldataRequest 创建池子动态数据请求参数
 type CreatePooldataRequest struct {
 	ChainID                string `json:"chainID" binding:""`                // 链 ID，与 poolbases 一致
 	PoolID                 string `json:"poolID" binding:""`                 // 池子 ID，与 poolbases.pool_id 对应
@@ -22,7 +22,7 @@ type CreatePooldataRequest struct {
 	LiquidationAmounBorrow string `json:"liquidationAmounBorrow" binding:""` // 清算产生的借入侧金额
 }
 
-// UpdatePooldataByIDRequest request params
+// UpdatePooldataByIDRequest 更新池子动态数据请求参数
 type UpdatePooldataByIDRequest struct {
 	ID uint64 `json:"id" binding:""` // uint64 id
 	// 主键ID
@@ -36,7 +36,7 @@ type UpdatePooldataByIDRequest struct {
 	LiquidationAmounBorrow string `json:"liquidationAmounBorrow" binding:""` // 清算产生的借入侧金额
 }
 
-// PooldataObjDetail detail
+// PooldataObjDetail 池子动态数据详情
 type PooldataObjDetail struct {
 	ID uint64 `json:"id"` // convert to uint64 id
 	// 主键ID
@@ -52,7 +52,7 @@ type PooldataObjDetail struct {
 	UpdatedAt              *time.Time `json:"updatedAt"`              // 更新时间
 }
 
-// CreatePooldataReply only for api docs
+// CreatePooldataReply 仅用于 API 文档
 type CreatePooldataReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -61,21 +61,21 @@ type CreatePooldataReply struct {
 	} `json:"data"` // return data
 }
 
-// DeletePooldataByIDReply only for api docs
+// DeletePooldataByIDReply 仅用于 API 文档
 type DeletePooldataByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// UpdatePooldataByIDReply only for api docs
+// UpdatePooldataByIDReply 仅用于 API 文档
 type UpdatePooldataByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// GetPooldataByIDReply only for api docs
+// GetPooldataByIDReply 仅用于 API 文档
 type GetPooldataByIDReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -84,12 +84,12 @@ type GetPooldataByIDReply struct {
 	} `json:"data"` // return data
 }
 
-// ListPooldatasRequest request params
+// ListPooldatasRequest 查询池子动态数据列表请求参数
 type ListPooldatasRequest struct {
 	query.Params
 }
 
-// ListPooldatasReply only for api docs
+// ListPooldatasReply 仅用于 API 文档
 type ListPooldatasReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description

@@ -17,29 +17,36 @@ import (
 const (
 	// cache prefix key, must end with a colon
 	tokenInfoCachePrefixKey = "tokenInfo:"
-	// TokenInfoExpireTime expire time
+	// TokenInfoExpireTime 代币信息缓存过期时间
 	TokenInfoExpireTime = 5 * time.Minute
 )
 
 var _ TokenInfoCache = (*tokenInfoCache)(nil)
 
-// TokenInfoCache cache interface
+// TokenInfoCache 代币信息缓存接口
 type TokenInfoCache interface {
+	// Set 设置代币信息缓存
 	Set(ctx context.Context, id uint64, data *model.TokenInfo, duration time.Duration) error
+	// Get 获取代币信息缓存
 	Get(ctx context.Context, id uint64) (*model.TokenInfo, error)
+	// MultiGet 批量获取代币信息缓存
 	MultiGet(ctx context.Context, ids []uint64) (map[uint64]*model.TokenInfo, error)
+	// MultiSet 批量设置代币信息缓存
 	MultiSet(ctx context.Context, data []*model.TokenInfo, duration time.Duration) error
+	// Del 删除代币信息缓存
 	Del(ctx context.Context, id uint64) error
+	// SetPlaceholder 设置占位符缓存（防止缓存穿透）
 	SetPlaceholder(ctx context.Context, id uint64) error
+	// IsPlaceholderErr 判断是否为占位符错误
 	IsPlaceholderErr(err error) bool
 }
 
-// tokenInfoCache define a cache struct
+// tokenInfoCache 代币信息缓存结构体
 type tokenInfoCache struct {
 	cache cache.Cache
 }
 
-// NewTokenInfoCache new a cache
+// NewTokenInfoCache 创建代币信息缓存实例，根据 cacheType 选择 Redis 或 Memory 缓存
 func NewTokenInfoCache(cacheType *database.CacheType) TokenInfoCache {
 	jsonEncoding := encoding.JSONEncoding{}
 	cachePrefix := ""
@@ -61,12 +68,12 @@ func NewTokenInfoCache(cacheType *database.CacheType) TokenInfoCache {
 	return nil // no cache
 }
 
-// GetTokenInfoCacheKey cache key
+// GetTokenInfoCacheKey 获取代币信息缓存键
 func (c *tokenInfoCache) GetTokenInfoCacheKey(id uint64) string {
 	return tokenInfoCachePrefixKey + utils.Uint64ToStr(id)
 }
 
-// Set write to cache
+// Set 将代币信息写入缓存
 func (c *tokenInfoCache) Set(ctx context.Context, id uint64, data *model.TokenInfo, duration time.Duration) error {
 	if data == nil || id == 0 {
 		return nil
@@ -79,7 +86,7 @@ func (c *tokenInfoCache) Set(ctx context.Context, id uint64, data *model.TokenIn
 	return nil
 }
 
-// Get cache value
+// Get 从缓存读取代币信息
 func (c *tokenInfoCache) Get(ctx context.Context, id uint64) (*model.TokenInfo, error) {
 	var data *model.TokenInfo
 	cacheKey := c.GetTokenInfoCacheKey(id)
@@ -90,7 +97,7 @@ func (c *tokenInfoCache) Get(ctx context.Context, id uint64) (*model.TokenInfo, 
 	return data, nil
 }
 
-// MultiSet multiple set cache
+// MultiSet 批量写入代币信息到缓存
 func (c *tokenInfoCache) MultiSet(ctx context.Context, data []*model.TokenInfo, duration time.Duration) error {
 	valMap := make(map[string]interface{})
 	for _, v := range data {
@@ -106,7 +113,7 @@ func (c *tokenInfoCache) MultiSet(ctx context.Context, data []*model.TokenInfo, 
 	return nil
 }
 
-// MultiGet multiple get cache, return key in map is id value
+// MultiGet 批量从缓存读取代币信息，返回 map 的 key 为 id 值
 func (c *tokenInfoCache) MultiGet(ctx context.Context, ids []uint64) (map[uint64]*model.TokenInfo, error) {
 	var keys []string
 	for _, v := range ids {
@@ -131,7 +138,7 @@ func (c *tokenInfoCache) MultiGet(ctx context.Context, ids []uint64) (map[uint64
 	return retMap, nil
 }
 
-// Del delete cache
+// Del 删除代币信息缓存
 func (c *tokenInfoCache) Del(ctx context.Context, id uint64) error {
 	cacheKey := c.GetTokenInfoCacheKey(id)
 	err := c.cache.Del(ctx, cacheKey)
@@ -141,13 +148,13 @@ func (c *tokenInfoCache) Del(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// SetPlaceholder set placeholder value to cache
+// SetPlaceholder 将占位符值写入缓存，用于防止缓存穿透（空值缓存）
 func (c *tokenInfoCache) SetPlaceholder(ctx context.Context, id uint64) error {
 	cacheKey := c.GetTokenInfoCacheKey(id)
 	return c.cache.SetCacheWithNotFound(ctx, cacheKey)
 }
 
-// IsPlaceholderErr check if cache is placeholder error
+// IsPlaceholderErr 判断错误是否为缓存占位符错误
 func (c *tokenInfoCache) IsPlaceholderErr(err error) bool {
 	return errors.Is(err, cache.ErrPlaceholder)
 }

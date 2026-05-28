@@ -32,7 +32,7 @@ import (
 
 var _ ContractHandler = (*contractHandler)(nil)
 
-// ContractHandler defining the handler interface
+// ContractHandler 合约操作处理器接口，包含合约部署、借贷池操作、预言机、债务代币、ERC20、WETH、Uniswap 等全部功能
 type ContractHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
@@ -107,6 +107,7 @@ type ContractHandler interface {
 	RouterGetAmountsOut(c *gin.Context)
 }
 
+// contractHandler 合约操作处理器实现，聚合了合约、代币、借贷池基础信息和借贷池运行数据的 DAO
 type contractHandler struct {
 	iDao         dao.ContractDao
 	tokenDao     dao.TokenInfoDao
@@ -114,7 +115,7 @@ type contractHandler struct {
 	pooldataDao  dao.PooldataDao
 }
 
-// NewContractHandler creating the handler interface
+// NewContractHandler 创建合约操作处理器实例，初始化合约、代币、借贷池基础信息和运行数据的 DAO
 func NewContractHandler() ContractHandler {
 	return &contractHandler{
 		iDao: dao.NewContractDao(
@@ -136,7 +137,7 @@ func NewContractHandler() ContractHandler {
 	}
 }
 
-// Create a new contract
+// Create 创建新的合约记录
 // @Summary Create a new contract
 // @Description Creates a new contract entity using the provided data in the request body.
 // @Tags contract
@@ -174,7 +175,7 @@ func (h *contractHandler) Create(c *gin.Context) {
 	response.Success(c, gin.H{"id": contract.ID})
 }
 
-// DeleteByID delete a contract by id
+// DeleteByID 根据 ID 删除合约记录
 // @Summary Delete a contract by id
 // @Description Deletes a existing contract identified by the given id in the path.
 // @Tags contract
@@ -202,7 +203,7 @@ func (h *contractHandler) DeleteByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// UpdateByID update a contract by id
+// UpdateByID 根据 ID 更新合约记录
 // @Summary Update a contract by id
 // @Description Updates the specified contract by given id in the path, support partial update.
 // @Tags contract
@@ -248,7 +249,7 @@ func (h *contractHandler) UpdateByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetByID get a contract by id
+// GetByID 根据 ID 查询合约记录
 // @Summary Get a contract by id
 // @Description Gets detailed information of a contract specified by the given id in the path.
 // @Tags contract
@@ -289,7 +290,7 @@ func (h *contractHandler) GetByID(c *gin.Context) {
 	response.Success(c, gin.H{"contract": data})
 }
 
-// List get a paginated list of contracts by custom conditions
+// List 分页查询合约列表，支持自定义筛选条件
 // @Summary Get a paginated list of contracts by custom conditions
 // @Description Returns a paginated list of contract based on query filters, including page number and size.
 // @Tags contract
@@ -859,7 +860,7 @@ func (h *contractHandler) CreatePool(c *gin.Context) {
 	})
 }
 
-// prepareTransactor 创建签名交易器：连接RPC、加载私钥、获取nonce/gas/chainID
+// prepareTransactor 创建已签名的交易器：连接 RPC 节点、加载私钥、获取 nonce/gas price/chain ID，返回 client、auth、cleanup 函数和错误
 func prepareTransactor(c *gin.Context, rpcURL, privateKey string) (
 	client *ethclient.Client,
 	auth *bind.TransactOpts,
@@ -907,7 +908,7 @@ func prepareTransactor(c *gin.Context, rpcURL, privateKey string) (
 	return client, auth, chainID, cleanup, nil
 }
 
-// prepareCaller 创建只读调用器
+// prepareCaller 创建只读调用器，连接 RPC 节点并返回 client 和清理函数
 func prepareCaller(rpcURL string) (*ethclient.Client, func(), error) {
 	client, err := ethclient.Dial(rpcURL)
 	if err != nil {
@@ -916,7 +917,7 @@ func prepareCaller(rpcURL string) (*ethclient.Client, func(), error) {
 	return client, func() { client.Close() }, nil
 }
 
-// parseBigInt 安全地将字符串转为 *big.Int
+// parseBigInt 安全地将十进制数字符串转换为 *big.Int，转换失败时返回错误
 func parseBigInt(s string) (*big.Int, error) {
 	n := new(big.Int)
 	if _, ok := n.SetString(s, 10); !ok {
@@ -925,6 +926,7 @@ func parseBigInt(s string) (*big.Int, error) {
 	return n, nil
 }
 
+// defaultAddr 如果地址字符串为空则返回默认地址，否则解析为 common.Address
 func defaultAddr(addrStr string, fallback common.Address) common.Address {
 	if addrStr == "" {
 		return fallback
@@ -932,6 +934,7 @@ func defaultAddr(addrStr string, fallback common.Address) common.Address {
 	return common.HexToAddress(addrStr)
 }
 
+// ifEmpty 如果字符串为空则返回备用值，否则返回原字符串
 func ifEmpty(s, fallback string) string {
 	if s == "" {
 		return fallback
@@ -939,6 +942,7 @@ func ifEmpty(s, fallback string) string {
 	return s
 }
 
+// waitReceipt 等待链上交易确认并检查交易状态，状态为 0（回滚）时返回错误
 func waitReceipt(c *gin.Context, client *ethclient.Client, tx *ethtypes.Transaction) (*ethtypes.Receipt, error) {
 	receipt, err := bind.WaitMined(c, client, tx)
 	if err != nil {
@@ -951,6 +955,7 @@ func waitReceipt(c *gin.Context, client *ethclient.Client, tx *ethtypes.Transact
 	return receipt, nil
 }
 
+// saveDeploy 将已部署的合约记录保存到数据库，如果是代币合约还会同时写入 token_info 表
 func saveDeploy(ctx context.Context, h *contractHandler, name, addr, txHash string, chainID *big.Int, form *types.DeployRequest, tokenSymbol string, tokenDecimals int) error {
 	privKey, err := crypto.HexToECDSA(strings.TrimPrefix(form.PrivateKey, "0x"))
 	if err != nil {
@@ -985,6 +990,7 @@ func saveDeploy(ctx context.Context, h *contractHandler, name, addr, txHash stri
 	return nil
 }
 
+// getContractIDFromPath 从请求路径中解析合约 ID，返回 (id字符串, id数值, 是否应中止请求)
 func getContractIDFromPath(c *gin.Context) (string, uint64, bool) {
 	idStr := c.Param("id")
 	id, err := utils.StrToUint64E(idStr)
@@ -996,6 +1002,7 @@ func getContractIDFromPath(c *gin.Context) (string, uint64, bool) {
 	return idStr, id, false
 }
 
+// convertContract 将模型层的 Contract 结构体转换为响应层结构体
 func convertContract(contract *model.Contract) (*types.ContractObjDetail, error) {
 	data := &types.ContractObjDetail{}
 	err := copier.Copy(data, contract)
@@ -1007,6 +1014,7 @@ func convertContract(contract *model.Contract) (*types.ContractObjDetail, error)
 	return data, nil
 }
 
+// convertContracts 将模型层的 Contract 列表批量转换为响应层结构体
 func convertContracts(fromValues []*model.Contract) ([]*types.ContractObjDetail, error) {
 	toValues := []*types.ContractObjDetail{}
 	for _, v := range fromValues {

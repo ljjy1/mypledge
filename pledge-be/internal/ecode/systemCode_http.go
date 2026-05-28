@@ -1,11 +1,11 @@
-// Package ecode is the package that unifies the definition of http error codes or grpc error codes here.
+// Package ecode 统一管理 HTTP 和 gRPC 错误码定义。
 package ecode
 
 import (
 	"github.com/go-dev-frame/sponge/pkg/errcode"
 )
 
-// http system level error code, error code range 10000~20000
+// HTTP 系统级错误码，错误码范围 10000~20000
 var (
 	Success = errcode.Success
 
@@ -36,7 +36,8 @@ var (
 	DataLoss           = errcode.DataLoss
 )
 
+// SkipResponse 跳过响应包装的错误码，用于无需统一响应格式的场景
 var SkipResponse = errcode.SkipResponse
 
-// GetErrorCode get error code from error
+// GetErrorCode 从错误对象中提取错误码
 var GetErrorCode = errcode.GetErrorCode

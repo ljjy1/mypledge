@@ -21,7 +21,7 @@ import (
 
 var _ TokenInfoHandler = (*tokenInfoHandler)(nil)
 
-// TokenInfoHandler defining the handler interface
+// TokenInfoHandler 代币信息处理器接口
 type TokenInfoHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
@@ -30,11 +30,12 @@ type TokenInfoHandler interface {
 	List(c *gin.Context)
 }
 
+// tokenInfoHandler 代币信息数据处理实现
 type tokenInfoHandler struct {
 	iDao dao.TokenInfoDao
 }
 
-// NewTokenInfoHandler creating the handler interface
+// NewTokenInfoHandler 创建代币信息处理器实例
 func NewTokenInfoHandler() TokenInfoHandler {
 	return &tokenInfoHandler{
 		iDao: dao.NewTokenInfoDao(
@@ -44,7 +45,7 @@ func NewTokenInfoHandler() TokenInfoHandler {
 	}
 }
 
-// Create a new tokenInfo
+// Create 创建新的代币信息记录
 // @Summary Create a new tokenInfo
 // @Description Creates a new tokenInfo entity using the provided data in the request body.
 // @Tags tokenInfo
@@ -82,7 +83,7 @@ func (h *tokenInfoHandler) Create(c *gin.Context) {
 	response.Success(c, gin.H{"id": tokenInfo.ID})
 }
 
-// DeleteByID delete a tokenInfo by id
+// DeleteByID 根据 ID 删除代币信息记录
 // @Summary Delete a tokenInfo by id
 // @Description Deletes a existing tokenInfo identified by the given id in the path.
 // @Tags tokenInfo
@@ -110,7 +111,7 @@ func (h *tokenInfoHandler) DeleteByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// UpdateByID update a tokenInfo by id
+// UpdateByID 根据 ID 更新代币信息记录
 // @Summary Update a tokenInfo by id
 // @Description Updates the specified tokenInfo by given id in the path, support partial update.
 // @Tags tokenInfo
@@ -156,7 +157,7 @@ func (h *tokenInfoHandler) UpdateByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetByID get a tokenInfo by id
+// GetByID 根据 ID 查询代币信息记录
 // @Summary Get a tokenInfo by id
 // @Description Gets detailed information of a tokenInfo specified by the given id in the path.
 // @Tags tokenInfo
@@ -197,7 +198,7 @@ func (h *tokenInfoHandler) GetByID(c *gin.Context) {
 	response.Success(c, gin.H{"tokenInfo": data})
 }
 
-// List get a paginated list of tokenInfos by custom conditions
+// List 分页查询代币信息列表，支持自定义筛选条件
 // @Summary Get a paginated list of tokenInfos by custom conditions
 // @Description Returns a paginated list of tokenInfo based on query filters, including page number and size.
 // @Tags tokenInfo
@@ -236,6 +237,7 @@ func (h *tokenInfoHandler) List(c *gin.Context) {
 	})
 }
 
+// getTokenInfoIDFromPath 从请求路径中解析代币信息 ID，返回 (id字符串, id数值, 是否应中止请求)
 func getTokenInfoIDFromPath(c *gin.Context) (string, uint64, bool) {
 	idStr := c.Param("id")
 	id, err := utils.StrToUint64E(idStr)
@@ -247,6 +249,7 @@ func getTokenInfoIDFromPath(c *gin.Context) (string, uint64, bool) {
 	return idStr, id, false
 }
 
+// convertTokenInfo 将模型层的 TokenInfo 结构体转换为响应层结构体
 func convertTokenInfo(tokenInfo *model.TokenInfo) (*types.TokenInfoObjDetail, error) {
 	data := &types.TokenInfoObjDetail{}
 	err := copier.Copy(data, tokenInfo)
@@ -258,6 +261,7 @@ func convertTokenInfo(tokenInfo *model.TokenInfo) (*types.TokenInfoObjDetail, er
 	return data, nil
 }
 
+// convertTokenInfos 将模型层的 TokenInfo 列表批量转换为响应层结构体
 func convertTokenInfos(fromValues []*model.TokenInfo) ([]*types.TokenInfoObjDetail, error) {
 	toValues := []*types.TokenInfoObjDetail{}
 	for _, v := range fromValues {

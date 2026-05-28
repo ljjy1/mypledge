@@ -17,12 +17,12 @@ type TokenInfo struct {
 	UpdatedAt *time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;not null" json:"updatedAt"` // 更新时间
 }
 
-// TableName table name
+// TableName 返回代币信息表名
 func (m *TokenInfo) TableName() string {
 	return "token_info"
 }
 
-// TokenInfoColumnNames Whitelist for custom query fields to prevent sql injection attacks
+// TokenInfoColumnNames 自定义查询字段白名单，防止 SQL 注入攻击
 var TokenInfoColumnNames = map[string]bool{
 	"id":         true,
 	"symbol":     true,

@@ -12,7 +12,7 @@ import (
 	"pledge-be/internal/types"
 )
 
-// ==================== BscPledgeOracle Write Operations ====================
+// ==================== BscPledgeOracle 写入操作 ====================
 
 // OracleSetPrice 设置资产价格（管理员）
 func (h *contractHandler) OracleSetPrice(c *gin.Context) {
@@ -119,7 +119,7 @@ func (h *contractHandler) OracleTransferOwnership(c *gin.Context) {
 	response.Success(c, gin.H{"txHash": tx.Hash().Hex()})
 }
 
-// ==================== BscPledgeOracle Read Operations ====================
+// ==================== BscPledgeOracle 只读操作 ====================
 
 // OracleGetPrice 查询资产价格
 func (h *contractHandler) OracleGetPrice(c *gin.Context) {

@@ -55,6 +55,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/contract/create-pool": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "在已部署的 PledgePool 合约上创建新的借贷池，并将池子信息存入数据库。",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "创建借贷池",
+                "parameters": [
+                    {
+                        "description": "创建池子参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.CreatePoolRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.CreatePoolReply"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/contract/deploy": {
             "post": {
                 "security": [
@@ -1204,6 +1243,97 @@ const docTemplate = `{
                 },
                 "txHash": {
                     "description": "部署交易哈希",
+                    "type": "string"
+                }
+            }
+        },
+        "types.CreatePoolReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "poolID": {
+                            "type": "integer"
+                        },
+                        "txHash": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.CreatePoolRequest": {
+            "type": "object",
+            "required": [
+                "autoLiquidateThreshold",
+                "borrowDebtToken",
+                "borrowToken",
+                "chainID",
+                "endTime",
+                "interestRate",
+                "lendDebtToken",
+                "lendToken",
+                "maxSupply",
+                "mortgageRate",
+                "poolContractAddress",
+                "privateKey",
+                "rpcUrl",
+                "settleTime"
+            ],
+            "properties": {
+                "autoLiquidateThreshold": {
+                    "type": "string"
+                },
+                "borrowDebtToken": {
+                    "type": "string"
+                },
+                "borrowToken": {
+                    "type": "string"
+                },
+                "borrowTokenSymbol": {
+                    "type": "string"
+                },
+                "chainID": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "interestRate": {
+                    "type": "string"
+                },
+                "lendDebtToken": {
+                    "type": "string"
+                },
+                "lendToken": {
+                    "type": "string"
+                },
+                "lendTokenSymbol": {
+                    "type": "string"
+                },
+                "maxSupply": {
+                    "type": "string"
+                },
+                "mortgageRate": {
+                    "type": "string"
+                },
+                "poolContractAddress": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "settleTime": {
                     "type": "string"
                 }
             }

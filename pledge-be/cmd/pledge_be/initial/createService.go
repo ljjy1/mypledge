@@ -10,7 +10,7 @@ import (
 	"github.com/go-dev-frame/sponge/pkg/app"
 )
 
-// CreateServices create http service
+// CreateServices 创建所有服务实例（HTTP 服务和定时任务服务）
 func CreateServices() []app.IServer {
 	var cfg = config.Get()
 	var servers []app.IServer

@@ -18,16 +18,24 @@ import (
 
 var _ TokenInfoDao = (*tokenInfoDao)(nil)
 
-// TokenInfoDao defining the dao interface
+// TokenInfoDao 代币信息数据访问接口
 type TokenInfoDao interface {
+	// Create 创建代币信息记录
 	Create(ctx context.Context, table *model.TokenInfo) error
+	// DeleteByID 根据 ID 删除代币信息
 	DeleteByID(ctx context.Context, id uint64) error
+	// UpdateByID 根据 ID 更新代币信息（支持部分更新）
 	UpdateByID(ctx context.Context, table *model.TokenInfo) error
+	// GetByID 根据 ID 获取代币信息
 	GetByID(ctx context.Context, id uint64) (*model.TokenInfo, error)
+	// GetByColumns 按条件分页查询代币信息列表
 	GetByColumns(ctx context.Context, params *query.Params) ([]*model.TokenInfo, int64, error)
 
+	// CreateByTx 在事务中创建代币信息记录
 	CreateByTx(ctx context.Context, tx *gorm.DB, table *model.TokenInfo) (uint64, error)
+	// DeleteByTx 在事务中根据 ID 删除代币信息
 	DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error
+	// UpdateByTx 在事务中根据 ID 更新代币信息
 	UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.TokenInfo) error
 }
 
@@ -37,7 +45,7 @@ type tokenInfoDao struct {
 	sfg   *singleflight.Group  // if cache is nil, the sfg is not used.
 }
 
-// NewTokenInfoDao creating the dao interface
+// NewTokenInfoDao 创建代币信息数据访问实例，可选传入缓存以实现缓存读写
 func NewTokenInfoDao(db *gorm.DB, xCache cache.TokenInfoCache) TokenInfoDao {
 	if xCache == nil {
 		return &tokenInfoDao{db: db}
@@ -49,6 +57,7 @@ func NewTokenInfoDao(db *gorm.DB, xCache cache.TokenInfoCache) TokenInfoDao {
 	}
 }
 
+// deleteCache 删除代币信息缓存（如果缓存实例不为 nil）
 func (d *tokenInfoDao) deleteCache(ctx context.Context, id uint64) error {
 	if d.cache != nil {
 		return d.cache.Del(ctx, id)
@@ -56,12 +65,12 @@ func (d *tokenInfoDao) deleteCache(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// Create a new tokenInfo, insert the record and the id value is written back to the table
+// Create 创建代币信息记录，插入后 ID 值会回写到传入的 table 参数中
 func (d *tokenInfoDao) Create(ctx context.Context, table *model.TokenInfo) error {
 	return d.db.WithContext(ctx).Create(table).Error
 }
 
-// DeleteByID delete a tokenInfo by id
+// DeleteByID 根据 ID 删除代币信息记录，同时清除对应的缓存
 func (d *tokenInfoDao) DeleteByID(ctx context.Context, id uint64) error {
 	err := d.db.WithContext(ctx).Where("id = ?", id).Delete(&model.TokenInfo{}).Error
 	if err != nil {
@@ -74,7 +83,7 @@ func (d *tokenInfoDao) DeleteByID(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// UpdateByID update a tokenInfo by id, support partial update
+// UpdateByID 根据 ID 更新代币信息记录（只更新非零字段），同时清除缓存
 func (d *tokenInfoDao) UpdateByID(ctx context.Context, table *model.TokenInfo) error {
 	err := d.updateDataByID(ctx, d.db, table)
 
@@ -84,6 +93,7 @@ func (d *tokenInfoDao) UpdateByID(ctx context.Context, table *model.TokenInfo) e
 	return err
 }
 
+// updateDataByID 根据 ID 更新代币信息数据，只将非空字段加入更新 map
 func (d *tokenInfoDao) updateDataByID(ctx context.Context, db *gorm.DB, table *model.TokenInfo) error {
 	if table.ID < 1 {
 		return errors.New("id cannot be 0")
@@ -114,7 +124,7 @@ func (d *tokenInfoDao) updateDataByID(ctx context.Context, db *gorm.DB, table *m
 	return db.WithContext(ctx).Model(table).Updates(update).Error
 }
 
-// GetByID get a tokenInfo by id
+// GetByID 根据 ID 获取代币信息，优先从缓存读取，缓存未命中则查数据库并回写缓存，使用 singleflight 防止缓存击穿
 func (d *tokenInfoDao) GetByID(ctx context.Context, id uint64) (*model.TokenInfo, error) {
 	// no cache
 	if d.cache == nil {
@@ -168,8 +178,8 @@ func (d *tokenInfoDao) GetByID(ctx context.Context, id uint64) (*model.TokenInfo
 	return nil, err
 }
 
-// GetByColumns get a paginated list of tokenInfos by custom conditions.
-// For more details, please refer to https://go-sponge.com/component/data/custom-page-query.html
+// GetByColumns 按自定义条件分页查询代币信息列表，支持排序和分页参数。
+// 详见 https://go-sponge.com/component/data/custom-page-query.html
 func (d *tokenInfoDao) GetByColumns(ctx context.Context, params *query.Params) ([]*model.TokenInfo, int64, error) {
 	queryStr, args, err := params.ConvertToGormConditions(query.WithWhitelistNames(model.TokenInfoColumnNames))
 	if err != nil {
@@ -197,13 +207,13 @@ func (d *tokenInfoDao) GetByColumns(ctx context.Context, params *query.Params) (
 	return records, total, err
 }
 
-// CreateByTx create a record in the database using the provided transaction
+// CreateByTx 在给定事务中创建代币信息记录，返回记录 ID
 func (d *tokenInfoDao) CreateByTx(ctx context.Context, tx *gorm.DB, table *model.TokenInfo) (uint64, error) {
 	err := tx.WithContext(ctx).Create(table).Error
 	return table.ID, err
 }
 
-// DeleteByTx delete a record by id in the database using the provided transaction
+// DeleteByTx 在给定事务中根据 ID 删除代币信息记录，同时清除缓存
 func (d *tokenInfoDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error {
 	err := tx.WithContext(ctx).Where("id = ?", id).Delete(&model.TokenInfo{}).Error
 	if err != nil {
@@ -216,7 +226,7 @@ func (d *tokenInfoDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) e
 	return nil
 }
 
-// UpdateByTx update a record by id in the database using the provided transaction
+// UpdateByTx 在给定事务中根据 ID 更新代币信息记录，同时清除缓存
 func (d *tokenInfoDao) UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.TokenInfo) error {
 	err := d.updateDataByID(ctx, tx, table)
 

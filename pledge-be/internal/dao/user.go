@@ -18,17 +18,26 @@ import (
 
 var _ UserDao = (*userDao)(nil)
 
-// UserDao defining the dao interface
+// UserDao 用户数据访问接口
 type UserDao interface {
+	// Create 创建用户记录
 	Create(ctx context.Context, table *model.User) error
+	// DeleteByID 根据 ID 删除用户
 	DeleteByID(ctx context.Context, id uint64) error
+	// UpdateByID 根据 ID 更新用户（支持部分更新）
 	UpdateByID(ctx context.Context, table *model.User) error
+	// GetByID 根据 ID 获取用户
 	GetByID(ctx context.Context, id uint64) (*model.User, error)
+	// GetByColumns 按条件分页查询用户列表
 	GetByColumns(ctx context.Context, params *query.Params) ([]*model.User, int64, error)
+	// GetByLogin 根据登录名获取用户
 	GetByLogin(ctx context.Context, login string) (*model.User, error)
 
+	// CreateByTx 在事务中创建用户记录
 	CreateByTx(ctx context.Context, tx *gorm.DB, table *model.User) (uint64, error)
+	// DeleteByTx 在事务中根据 ID 删除用户
 	DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error
+	// UpdateByTx 在事务中根据 ID 更新用户
 	UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.User) error
 }
 
@@ -38,7 +47,7 @@ type userDao struct {
 	sfg   *singleflight.Group // if cache is nil, the sfg is not used.
 }
 
-// NewUserDao creating the dao interface
+// NewUserDao 创建用户数据访问实例，可选传入缓存以实现缓存读写
 func NewUserDao(db *gorm.DB, xCache cache.UserCache) UserDao {
 	if xCache == nil {
 		return &userDao{db: db}
@@ -50,6 +59,7 @@ func NewUserDao(db *gorm.DB, xCache cache.UserCache) UserDao {
 	}
 }
 
+// deleteCache 删除用户缓存（如果缓存实例不为 nil）
 func (d *userDao) deleteCache(ctx context.Context, id uint64) error {
 	if d.cache != nil {
 		return d.cache.Del(ctx, id)
@@ -57,12 +67,12 @@ func (d *userDao) deleteCache(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// Create a new user, insert the record and the id value is written back to the table
+// Create 创建用户记录，插入后 ID 值会回写到传入的 table 参数中
 func (d *userDao) Create(ctx context.Context, table *model.User) error {
 	return d.db.WithContext(ctx).Create(table).Error
 }
 
-// DeleteByID delete a user by id
+// DeleteByID 根据 ID 删除用户记录，同时清除对应的缓存
 func (d *userDao) DeleteByID(ctx context.Context, id uint64) error {
 	err := d.db.WithContext(ctx).Where("id = ?", id).Delete(&model.User{}).Error
 	if err != nil {
@@ -75,7 +85,7 @@ func (d *userDao) DeleteByID(ctx context.Context, id uint64) error {
 	return nil
 }
 
-// UpdateByID update a user by id, support partial update
+// UpdateByID 根据 ID 更新用户记录（只更新非零字段），同时清除缓存
 func (d *userDao) UpdateByID(ctx context.Context, table *model.User) error {
 	err := d.updateDataByID(ctx, d.db, table)
 
@@ -85,6 +95,7 @@ func (d *userDao) UpdateByID(ctx context.Context, table *model.User) error {
 	return err
 }
 
+// updateDataByID 根据 ID 更新用户数据，只将非空字段加入更新 map
 func (d *userDao) updateDataByID(ctx context.Context, db *gorm.DB, table *model.User) error {
 	if table.ID < 1 {
 		return errors.New("id cannot be 0")
@@ -105,7 +116,7 @@ func (d *userDao) updateDataByID(ctx context.Context, db *gorm.DB, table *model.
 	return db.WithContext(ctx).Model(table).Updates(update).Error
 }
 
-// GetByID get a user by id
+// GetByID 根据 ID 获取用户，优先从缓存读取，缓存未命中则查数据库并回写缓存，使用 singleflight 防止缓存击穿
 func (d *userDao) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	// no cache
 	if d.cache == nil {
@@ -159,8 +170,8 @@ func (d *userDao) GetByID(ctx context.Context, id uint64) (*model.User, error) {
 	return nil, err
 }
 
-// GetByColumns get a paginated list of users by custom conditions.
-// For more details, please refer to https://go-sponge.com/component/data/custom-page-query.html
+// GetByColumns 按自定义条件分页查询用户列表，支持排序和分页参数。
+// 详见 https://go-sponge.com/component/data/custom-page-query.html
 func (d *userDao) GetByColumns(ctx context.Context, params *query.Params) ([]*model.User, int64, error) {
 	queryStr, args, err := params.ConvertToGormConditions(query.WithWhitelistNames(model.UserColumnNames))
 	if err != nil {
@@ -188,20 +199,20 @@ func (d *userDao) GetByColumns(ctx context.Context, params *query.Params) ([]*mo
 	return records, total, err
 }
 
-// GetByLogin get a user by login name
+// GetByLogin 根据登录名获取用户
 func (d *userDao) GetByLogin(ctx context.Context, login string) (*model.User, error) {
 	record := &model.User{}
 	err := d.db.WithContext(ctx).Where("login = ?", login).First(record).Error
 	return record, err
 }
 
-// CreateByTx create a record in the database using the provided transaction
+// CreateByTx 在给定事务中创建用户记录，返回记录 ID
 func (d *userDao) CreateByTx(ctx context.Context, tx *gorm.DB, table *model.User) (uint64, error) {
 	err := tx.WithContext(ctx).Create(table).Error
 	return table.ID, err
 }
 
-// DeleteByTx delete a record by id in the database using the provided transaction
+// DeleteByTx 在给定事务中根据 ID 删除用户记录，同时清除缓存
 func (d *userDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error {
 	err := tx.WithContext(ctx).Where("id = ?", id).Delete(&model.User{}).Error
 	if err != nil {
@@ -214,7 +225,7 @@ func (d *userDao) DeleteByTx(ctx context.Context, tx *gorm.DB, id uint64) error 
 	return nil
 }
 
-// UpdateByTx update a record by id in the database using the provided transaction
+// UpdateByTx 在给定事务中根据 ID 更新用户记录，同时清除缓存
 func (d *userDao) UpdateByTx(ctx context.Context, tx *gorm.DB, table *model.User) error {
 	err := d.updateDataByID(ctx, tx, table)
 

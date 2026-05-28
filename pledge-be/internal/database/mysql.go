@@ -11,7 +11,7 @@ import (
 	"pledge-be/internal/config"
 )
 
-// InitMysql connect mysql
+// InitMysql 初始化 MySQL 数据库连接，读取配置并设置连接池参数（最大空闲连接、最大打开连接、最大生存时间等）
 func InitMysql() *sgorm.DB {
 	mysqlCfg := config.Get().Database.Mysql
 	opts := []mysql.Option{

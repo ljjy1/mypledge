@@ -12,17 +12,19 @@ import (
 	"pledge-be/internal/config"
 )
 
-const TypePrintMessage = "schedule:print"
+// 任务类型常量
+const (
+	TypePoolInfo       = "schedule:pool_info"
+	TypeTokenPrice     = "schedule:token_price"
+	TypeTokenSymbol    = "schedule:token_symbol"
+	TypeTokenLogo      = "schedule:token_logo"
+	TypeBalanceMonitor = "schedule:balance_monitor"
+	TypeSavePlgrPrice  = "schedule:save_plgr_price"
+)
 
-// PrintMessagePayload 定时打印消息任务载荷
-type PrintMessagePayload struct {
-	Message string `json:"message"`
-}
-
-// HandlePrintMessage 处理定时打印消息任务
-func HandlePrintMessage(ctx context.Context, p *PrintMessagePayload) error {
-	logger.Info("[定时任务] " + p.Message)
-	return nil
+// EmptyPayload 无需参数的通用任务载荷
+type EmptyPayload struct {
+	Dummy string `json:"dummy"`
 }
 
 // ScheduleServer 封装 asynq Scheduler + Server，实现 app.IServer 接口
@@ -44,7 +46,10 @@ func (s *ScheduleServer) Start() error {
 	serverCfg := sasynq.DefaultServerConfig(sasynq.WithLogger(logger.Get()))
 	srv := sasynq.NewServer(redisCfg, serverCfg)
 	srv.Use(sasynq.LoggingMiddleware(sasynq.WithLogger(logger.Get())))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypePrintMessage, sasynq.HandleFunc(HandlePrintMessage))
+
+	// 注册所有任务处理器
+	registerHandlers(srv)
+
 	srv.Run()
 	s.server = srv
 
@@ -52,14 +57,17 @@ func (s *ScheduleServer) Start() error {
 	scheduler := sasynq.NewScheduler(redisCfg,
 		sasynq.WithSchedulerLogger(sasynq.WithLogger(logger.Get())),
 	)
-	_, err := scheduler.RegisterTask("@every 1m", TypePrintMessage, &PrintMessagePayload{
-		Message: "Hello! This message is printed every minute by the scheduled task.",
-	})
-	if err != nil {
-		return fmt.Errorf("register schedule task error: %w", err)
+
+	// 注册所有定时任务
+	if err := registerSchedulerTasks(scheduler); err != nil {
+		return fmt.Errorf("register schedule tasks error: %w", err)
 	}
+
 	scheduler.Run()
 	s.scheduler = scheduler
+
+	// 启动时立即执行一次所有任务
+	go runInitialTasks()
 
 	logger.Info("[schedule] asynq scheduler and server started")
 	return nil
@@ -82,26 +90,119 @@ func (s *ScheduleServer) String() string {
 	return "schedule server"
 }
 
+// registerHandlers 注册所有任务处理器
+func registerHandlers(srv *sasynq.Server) {
+	sasynq.RegisterTaskHandler(srv.Mux(), TypePoolInfo, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return PoolService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenPrice, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return TokenPriceService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenSymbol, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return TokenSymbolService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenLogo, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return TokenLogoService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypeBalanceMonitor, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return BalanceMonitorService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypeSavePlgrPrice, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return SavePlgrPriceTestNetService(ctx)
+		},
+	))
+}
+
+// registerSchedulerTasks 注册所有定时任务
+func registerSchedulerTasks(scheduler *sasynq.Scheduler) error {
+	tasks := []struct {
+		cron     string
+		typeName string
+		payload  interface{}
+		desc     string
+	}{
+		{cron: "@every 2m", typeName: TypePoolInfo, payload: &EmptyPayload{}, desc: "资金池数据同步"},
+		{cron: "@every 1m", typeName: TypeTokenPrice, payload: &EmptyPayload{}, desc: "代币价格同步"},
+		{cron: "@every 2h", typeName: TypeTokenSymbol, payload: &EmptyPayload{}, desc: "代币 Symbol 同步"},
+		{cron: "@every 2h", typeName: TypeTokenLogo, payload: &EmptyPayload{}, desc: "代币 Logo 同步"},
+		{cron: "@every 30m", typeName: TypeBalanceMonitor, payload: &EmptyPayload{}, desc: "合约余额监控"},
+		{cron: "@every 30m", typeName: TypeSavePlgrPrice, payload: &EmptyPayload{}, desc: "写入 PLGR 价格"},
+	}
+
+	for _, t := range tasks {
+		id, err := scheduler.RegisterTask(t.cron, t.typeName, t.payload)
+		if err != nil {
+			return fmt.Errorf("register task %s(%s) error: %w", t.desc, t.typeName, err)
+		}
+		logger.Info("[schedule] registered task",
+			logger.String("desc", t.desc),
+			logger.String("cron", t.cron),
+			logger.String("entryID", id),
+		)
+	}
+	return nil
+}
+
+// runInitialTasks 启动时立即执行所有任务一次
+func runInitialTasks() {
+	logger.Info("[schedule] running initial tasks...")
+
+	// 清空 Redis 缓存
+	EnsureRedisFlush()
+
+	ctx := context.Background()
+	tasks := []struct {
+		name string
+		fn   func(context.Context) error
+	}{
+		{"PoolInfo", PoolService},
+		{"TokenPrice", TokenPriceService},
+		{"TokenSymbol", TokenSymbolService},
+		{"TokenLogo", TokenLogoService},
+		{"BalanceMonitor", BalanceMonitorService},
+		{"SavePlgrPrice", SavePlgrPriceTestNetService},
+	}
+
+	for _, t := range tasks {
+		logger.Info("[schedule] initial run: " + t.name)
+		if err := t.fn(ctx); err != nil {
+			logger.Warn("[schedule] initial run error", logger.String("task", t.name), logger.Err(err))
+		}
+	}
+
+	logger.Info("[schedule] all initial tasks completed")
+}
+
 // parseRedisConfig 从项目配置解析出 sasynq.RedisConfig
-// DSN 格式: [user]:<password>@host:port/db
 func parseRedisConfig() sasynq.RedisConfig {
 	dsn := config.Get().Redis.Dsn
 	cfg := sasynq.RedisConfig{
 		Mode: sasynq.RedisModeSingle,
 	}
 
-	// 提取 password 和 host:port/db
+	// 解析 DSN 中 @ 前的认证信息（密码）
 	if idx := strings.LastIndex(dsn, "@"); idx >= 0 {
 		authPart := dsn[:idx]
 		rest := dsn[idx+1:]
-		// authPart 格式: [user]:password
+		// 从认证信息中提取密码（格式 user:password 或 password）
 		if colonIdx := strings.Index(authPart, ":"); colonIdx >= 0 {
 			cfg.Password = authPart[colonIdx+1:]
 		} else {
 			cfg.Password = authPart
 		}
 
-		// rest 格式: host:port/db
+		// 从 @ 后的部分解析地址和数据库编号（格式 host:port/db）
 		if slashIdx := strings.Index(rest, "/"); slashIdx >= 0 {
 			cfg.Addr = rest[:slashIdx]
 			dbStr := rest[slashIdx+1:]
@@ -114,6 +215,7 @@ func parseRedisConfig() sasynq.RedisConfig {
 			cfg.Addr = rest
 		}
 	} else {
+		// 无 @ 符号，整个 DSN 视为地址
 		cfg.Addr = dsn
 	}
 

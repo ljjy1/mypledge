@@ -16,6 +16,7 @@ import (
 // @in header
 // @name Authorization
 // @description Type Bearer your-jwt-token to Value
+// main 是应用入口函数，初始化应用、创建服务实例并启动 HTTP 服务
 func main() {
 	initial.InitApp()
 	services := initial.CreateServices()

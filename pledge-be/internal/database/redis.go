@@ -23,13 +23,15 @@ var (
 	cacheTypeOnce sync.Once
 )
 
-// CacheType cache type
+// CacheType 缓存类型配置，包含缓存类型（memory 或 redis）和 Redis 客户端
 type CacheType struct {
-	CType string          // cache type  memory or redis
-	Rdb   *goredis.Client // if CType=redis, Rdb cannot be empty
+	// CType 缓存类型，可选 "memory" 或 "redis"
+	CType string
+	// Rdb Redis 客户端，当 CType 为 "redis" 时必填
+	Rdb *goredis.Client
 }
 
-// InitCache initial cache
+// InitCache 根据传入的缓存类型初始化缓存（memory 或 redis），若为 redis 则同时初始化 Redis 客户端
 func InitCache(cType string) {
 	cacheType = &CacheType{
 		CType: cType,
@@ -40,7 +42,7 @@ func InitCache(cType string) {
 	}
 }
 
-// GetCacheType get cacheType
+// GetCacheType 获取缓存类型实例（单例，懒加载）
 func GetCacheType() *CacheType {
 	if cacheType == nil {
 		cacheTypeOnce.Do(func() {
@@ -51,7 +53,7 @@ func GetCacheType() *CacheType {
 	return cacheType
 }
 
-// InitRedis connect redis
+// InitRedis 初始化 Redis 客户端连接，读取配置并设置连接超时参数，可选启用链路追踪
 func InitRedis() {
 	redisCfg := config.Get().Redis
 	opts := []goredis.Option{
@@ -70,7 +72,7 @@ func InitRedis() {
 	}
 }
 
-// GetRedisCli get redis client
+// GetRedisCli 获取 Redis 客户端实例（单例，懒加载）
 func GetRedisCli() *goredis.Client {
 	if redisCli == nil {
 		redisCliOnce.Do(func() {
@@ -81,7 +83,7 @@ func GetRedisCli() *goredis.Client {
 	return redisCli
 }
 
-// CloseRedis close redis
+// CloseRedis 关闭 Redis 连接
 func CloseRedis() error {
 	return goredis.Close(redisCli)
 }

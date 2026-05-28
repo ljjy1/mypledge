@@ -17,12 +17,12 @@ type Contract struct {
 	UpdatedAt        *time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;not null" json:"updatedAt"` // 更新时间
 }
 
-// TableName table name
+// TableName 返回合约表名
 func (m *Contract) TableName() string {
 	return "contract"
 }
 
-// ContractColumnNames Whitelist for custom query fields to prevent sql injection attacks
+// ContractColumnNames 自定义查询字段白名单，防止 SQL 注入攻击
 var ContractColumnNames = map[string]bool{
 	"id":                true,
 	"node_url":          true,

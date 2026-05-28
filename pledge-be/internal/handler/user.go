@@ -25,7 +25,7 @@ import (
 
 var _ UserHandler = (*userHandler)(nil)
 
-// UserHandler defining the handler interface
+// UserHandler 用户处理器接口
 type UserHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
@@ -36,11 +36,12 @@ type UserHandler interface {
 	Register(c *gin.Context)
 }
 
+// userHandler 用户数据处理实现
 type userHandler struct {
 	iDao dao.UserDao
 }
 
-// NewUserHandler creating the handler interface
+// NewUserHandler 创建用户处理器实例
 func NewUserHandler() UserHandler {
 	return &userHandler{
 		iDao: dao.NewUserDao(
@@ -50,7 +51,7 @@ func NewUserHandler() UserHandler {
 	}
 }
 
-// Create a new user
+// Create 创建新的用户记录
 // @Summary Create a new user
 // @Description Creates a new user entity using the provided data in the request body.
 // @Tags user
@@ -88,7 +89,7 @@ func (h *userHandler) Create(c *gin.Context) {
 	response.Success(c, gin.H{"id": user.ID})
 }
 
-// DeleteByID delete a user by id
+// DeleteByID 根据 ID 删除用户记录
 // @Summary Delete a user by id
 // @Description Deletes a existing user identified by the given id in the path.
 // @Tags user
@@ -116,7 +117,7 @@ func (h *userHandler) DeleteByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// UpdateByID update a user by id
+// UpdateByID 根据 ID 更新用户记录
 // @Summary Update a user by id
 // @Description Updates the specified user by given id in the path, support partial update.
 // @Tags user
@@ -162,7 +163,7 @@ func (h *userHandler) UpdateByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetByID get a user by id
+// GetByID 根据 ID 查询用户记录
 // @Summary Get a user by id
 // @Description Gets detailed information of a user specified by the given id in the path.
 // @Tags user
@@ -203,7 +204,7 @@ func (h *userHandler) GetByID(c *gin.Context) {
 	response.Success(c, gin.H{"user": data})
 }
 
-// List get a paginated list of users by custom conditions
+// List 分页查询用户列表，支持自定义筛选条件
 // @Summary Get a paginated list of users by custom conditions
 // @Description Returns a paginated list of user based on query filters, including page number and size.
 // @Tags user
@@ -247,7 +248,7 @@ func (h *userHandler) List(c *gin.Context) {
 	})
 }
 
-// Login user login
+// Login 用户登录认证，验证用户名密码并返回 JWT 令牌
 // @Summary User login
 // @Description Authenticates user and returns a JWT token.
 // @Tags user
@@ -283,7 +284,7 @@ func (h *userHandler) Login(c *gin.Context) {
 	response.Success(c, gin.H{"token": token})
 }
 
-// Register user register
+// Register 用户注册，包含字段格式验证和唯一性检查
 // @Summary User register
 // @Description Registers a new user with validation rules.
 // @Tags user
@@ -346,6 +347,7 @@ func (h *userHandler) Register(c *gin.Context) {
 	response.Success(c, gin.H{"id": user.ID})
 }
 
+// getUserIDFromPath 从请求路径中解析用户 ID，返回 (id字符串, id数值, 是否应中止请求)
 func getUserIDFromPath(c *gin.Context) (string, uint64, bool) {
 	idStr := c.Param("id")
 	id, err := utils.StrToUint64E(idStr)
@@ -357,6 +359,7 @@ func getUserIDFromPath(c *gin.Context) (string, uint64, bool) {
 	return idStr, id, false
 }
 
+// convertUser 将模型层的 User 结构体转换为响应层结构体
 func convertUser(user *model.User) (*types.UserObjDetail, error) {
 	data := &types.UserObjDetail{}
 	err := copier.Copy(data, user)
@@ -368,6 +371,7 @@ func convertUser(user *model.User) (*types.UserObjDetail, error) {
 	return data, nil
 }
 
+// convertUsers 将模型层的 User 列表批量转换为响应层结构体
 func convertUsers(fromValues []*model.User) ([]*types.UserObjDetail, error) {
 	toValues := []*types.UserObjDetail{}
 	for _, v := range fromValues {

@@ -22,6 +22,7 @@ func Location(rel string) string {
 	return filepath.Join(basePath, rel)
 }
 
+// Path 是 Location 的别名，返回配置文件的绝对路径
 func Path(rel string) string {
 	return Location(rel)
 }

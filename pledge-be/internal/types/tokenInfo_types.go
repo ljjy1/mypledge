@@ -10,7 +10,7 @@ var _ time.Time
 
 // Tip: suggested filling in the binding rules https://github.com/go-playground/validator in request struct fields tag.
 
-// CreateTokenInfoRequest request params
+// CreateTokenInfoRequest 创建代币信息请求参数
 type CreateTokenInfoRequest struct {
 	Symbol   string `json:"symbol" binding:""`   // 代币符号，如 BUSD/BTC
 	Logo     string `json:"logo" binding:""`     // 代币 logo URL
@@ -20,7 +20,7 @@ type CreateTokenInfoRequest struct {
 	Decimals int    `json:"decimals" binding:""` // 代币精度(小数位数)
 }
 
-// UpdateTokenInfoByIDRequest request params
+// UpdateTokenInfoByIDRequest 更新代币信息请求参数
 type UpdateTokenInfoByIDRequest struct {
 	ID uint64 `json:"id" binding:""` // uint64 id
 	// 主键ID
@@ -32,7 +32,7 @@ type UpdateTokenInfoByIDRequest struct {
 	Decimals int    `json:"decimals" binding:""` // 代币精度(小数位数)
 }
 
-// TokenInfoObjDetail detail
+// TokenInfoObjDetail 代币信息详情
 type TokenInfoObjDetail struct {
 	ID uint64 `json:"id"` // convert to uint64 id
 	// 主键ID
@@ -46,7 +46,7 @@ type TokenInfoObjDetail struct {
 	UpdatedAt *time.Time `json:"updatedAt"` // 更新时间
 }
 
-// CreateTokenInfoReply only for api docs
+// CreateTokenInfoReply 仅用于 API 文档
 type CreateTokenInfoReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -55,21 +55,21 @@ type CreateTokenInfoReply struct {
 	} `json:"data"` // return data
 }
 
-// DeleteTokenInfoByIDReply only for api docs
+// DeleteTokenInfoByIDReply 仅用于 API 文档
 type DeleteTokenInfoByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// UpdateTokenInfoByIDReply only for api docs
+// UpdateTokenInfoByIDReply 仅用于 API 文档
 type UpdateTokenInfoByIDReply struct {
 	Code int      `json:"code"` // return code
 	Msg  string   `json:"msg"`  // return information description
 	Data struct{} `json:"data"` // return data
 }
 
-// GetTokenInfoByIDReply only for api docs
+// GetTokenInfoByIDReply 仅用于 API 文档
 type GetTokenInfoByIDReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -78,12 +78,12 @@ type GetTokenInfoByIDReply struct {
 	} `json:"data"` // return data
 }
 
-// ListTokenInfosRequest request params
+// ListTokenInfosRequest 查询代币信息列表请求参数
 type ListTokenInfosRequest struct {
 	query.Params
 }
 
-// ListTokenInfosReply only for api docs
+// ListTokenInfosReply 仅用于 API 文档
 type ListTokenInfosReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description

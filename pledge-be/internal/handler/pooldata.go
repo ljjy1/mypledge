@@ -21,7 +21,7 @@ import (
 
 var _ PooldataHandler = (*pooldataHandler)(nil)
 
-// PooldataHandler defining the handler interface
+// PooldataHandler 借贷池运行数据处理器接口
 type PooldataHandler interface {
 	Create(c *gin.Context)
 	DeleteByID(c *gin.Context)
@@ -30,11 +30,12 @@ type PooldataHandler interface {
 	List(c *gin.Context)
 }
 
+// pooldataHandler 借贷池运行数据处理实现
 type pooldataHandler struct {
 	iDao dao.PooldataDao
 }
 
-// NewPooldataHandler creating the handler interface
+// NewPooldataHandler 创建借贷池运行数据处理器实例
 func NewPooldataHandler() PooldataHandler {
 	return &pooldataHandler{
 		iDao: dao.NewPooldataDao(
@@ -44,7 +45,7 @@ func NewPooldataHandler() PooldataHandler {
 	}
 }
 
-// Create a new pooldata
+// Create 创建新的借贷池运行数据记录
 // @Summary Create a new pooldata
 // @Description Creates a new pooldata entity using the provided data in the request body.
 // @Tags pooldata
@@ -82,7 +83,7 @@ func (h *pooldataHandler) Create(c *gin.Context) {
 	response.Success(c, gin.H{"id": pooldata.ID})
 }
 
-// DeleteByID delete a pooldata by id
+// DeleteByID 根据 ID 删除借贷池运行数据记录
 // @Summary Delete a pooldata by id
 // @Description Deletes a existing pooldata identified by the given id in the path.
 // @Tags pooldata
@@ -110,7 +111,7 @@ func (h *pooldataHandler) DeleteByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// UpdateByID update a pooldata by id
+// UpdateByID 根据 ID 更新借贷池运行数据记录
 // @Summary Update a pooldata by id
 // @Description Updates the specified pooldata by given id in the path, support partial update.
 // @Tags pooldata
@@ -156,7 +157,7 @@ func (h *pooldataHandler) UpdateByID(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetByID get a pooldata by id
+// GetByID 根据 ID 查询借贷池运行数据记录
 // @Summary Get a pooldata by id
 // @Description Gets detailed information of a pooldata specified by the given id in the path.
 // @Tags pooldata
@@ -197,7 +198,7 @@ func (h *pooldataHandler) GetByID(c *gin.Context) {
 	response.Success(c, gin.H{"pooldata": data})
 }
 
-// List get a paginated list of pooldatas by custom conditions
+// List 分页查询借贷池运行数据列表，支持自定义筛选条件
 // @Summary Get a paginated list of pooldatas by custom conditions
 // @Description Returns a paginated list of pooldata based on query filters, including page number and size.
 // @Tags pooldata
@@ -236,6 +237,7 @@ func (h *pooldataHandler) List(c *gin.Context) {
 	})
 }
 
+// getPooldataIDFromPath 从请求路径中解析借贷池运行数据 ID，返回 (id字符串, id数值, 是否应中止请求)
 func getPooldataIDFromPath(c *gin.Context) (string, uint64, bool) {
 	idStr := c.Param("id")
 	id, err := utils.StrToUint64E(idStr)
@@ -247,6 +249,7 @@ func getPooldataIDFromPath(c *gin.Context) (string, uint64, bool) {
 	return idStr, id, false
 }
 
+// convertPooldata 将模型层的 Pooldata 结构体转换为响应层结构体
 func convertPooldata(pooldata *model.Pooldata) (*types.PooldataObjDetail, error) {
 	data := &types.PooldataObjDetail{}
 	err := copier.Copy(data, pooldata)
@@ -258,6 +261,7 @@ func convertPooldata(pooldata *model.Pooldata) (*types.PooldataObjDetail, error)
 	return data, nil
 }
 
+// convertPooldatas 将模型层的 Pooldata 列表批量转换为响应层结构体
 func convertPooldatas(fromValues []*model.Pooldata) ([]*types.PooldataObjDetail, error) {
 	toValues := []*types.PooldataObjDetail{}
 	for _, v := range fromValues {

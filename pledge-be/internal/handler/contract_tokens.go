@@ -12,7 +12,7 @@ import (
 	"pledge-be/internal/types"
 )
 
-// ==================== ERC20 Operations ====================
+// ==================== ERC20 代币操作 ====================
 
 // TokenApprove 授权代币
 func (h *contractHandler) TokenApprove(c *gin.Context) {
@@ -144,7 +144,7 @@ func (h *contractHandler) TokenAllowance(c *gin.Context) {
 	response.Success(c, gin.H{"allowance": allowance.String()})
 }
 
-// ==================== DebtToken Operations ====================
+// ==================== 债务代币操作 ====================
 
 // DebtTokenMint 铸造债务代币（管理员）
 func (h *contractHandler) DebtTokenMint(c *gin.Context) {
@@ -306,7 +306,7 @@ func (h *contractHandler) DebtTokenTotalSupply(c *gin.Context) {
 	response.Success(c, gin.H{"totalSupply": supply.String()})
 }
 
-// ==================== WETH Operations ====================
+// ==================== WETH 操作 ====================
 
 // WETHDeposit 存入ETH换取WETH
 func (h *contractHandler) WETHDeposit(c *gin.Context) {

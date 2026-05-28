@@ -12,7 +12,7 @@ import (
 	"pledge-be/internal/types"
 )
 
-// ==================== UniswapV2Factory Operations ====================
+// ==================== UniswapV2Factory 操作 ====================
 
 // FactoryCreatePair 创建交易对
 func (h *contractHandler) FactoryCreatePair(c *gin.Context) {
@@ -43,8 +43,8 @@ func (h *contractHandler) FactoryCreatePair(c *gin.Context) {
 	}
 
 	_ = tx
-	// CreatePair 返回交易对地址，类型为 *types.Transaction，但没有直接的 address 返回值
-	// 需要等待 receipt 然后解析事件，简化实现返回 txHash
+	// CreatePair 返回交易对地址，但 go 绑定返回类型为 *types.Transaction，没有直接的 address 返回值
+	// 需要等待 receipt 然后解析事件；此处简化实现，直接返回交易哈希
 	response.Success(c, gin.H{"txHash": tx.Hash().Hex()})
 }
 
@@ -108,7 +108,7 @@ func (h *contractHandler) FactoryGetPair(c *gin.Context) {
 	response.Success(c, gin.H{"pairAddress": pairAddr.Hex()})
 }
 
-// ==================== UniswapV2Router02 Operations ====================
+// ==================== UniswapV2Router02 操作 ====================
 
 // RouterAddLiquidity 添加流动性
 func (h *contractHandler) RouterAddLiquidity(c *gin.Context) {
@@ -165,6 +165,8 @@ func (h *contractHandler) RouterSwapExactTokensForTokens(c *gin.Context) {
 	amountOutMin, _ := parseBigInt(form.AmountOutMin)
 	deadline, _ := parseBigInt(form.Deadline)
 
+	// 将请求中的路径地址字符串数组转换为以太坊 common.Address 数组
+	// 用于指定代币兑换路径（如 TokenA -> WETH -> TokenB）
 	path := make([]common.Address, len(form.Path))
 	for i, p := range form.Path {
 		path[i] = common.HexToAddress(p)
@@ -201,6 +203,9 @@ func (h *contractHandler) RouterGetAmountsOut(c *gin.Context) {
 	}
 
 	amountIn, _ := parseBigInt(form.AmountIn)
+
+	// 将请求中的路径地址字符串数组转换为以太坊 common.Address 数组
+	// 用于查询指定兑换路径的预期输出金额
 	path := make([]common.Address, len(form.Path))
 	for i, p := range form.Path {
 		path[i] = common.HexToAddress(p)
@@ -226,6 +231,7 @@ func (h *contractHandler) RouterGetAmountsOut(c *gin.Context) {
 		return
 	}
 
+	// 将 big.Int 输出金额数组转换为字符串数组，便于 JSON 序列化返回给前端
 	result := make([]string, len(amounts))
 	for i, v := range amounts {
 		result[i] = v.String()

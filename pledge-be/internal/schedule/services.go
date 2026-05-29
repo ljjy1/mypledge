@@ -627,3 +627,388 @@ func EnsureRedisFlush() {
 		logger.Info("[schedule] Redis cache flushed")
 	}
 }
+
+// ==================== 3. finishService — 到期完成检测与执行 ====================
+
+// FinishService 到期完成检测定时任务，每 5 分钟执行一次
+// 查询 EXECUTION 状态且 EndTime <= 当前时间的池子，调用链上 checkCanFinish 检测，
+// 可完成则执行 FinishPool 交易
+func FinishService(ctx context.Context) error {
+	logger.Info("[schedule] FinishService start: checking finishable pools")
+
+	// 1. 从缓存或 DB 获取所有 PledgePool 合约
+	contracts, err := getPledgePoolContracts(ctx)
+	if err != nil {
+		return fmt.Errorf("get pledge pool contracts error: %w", err)
+	}
+	if len(contracts) == 0 {
+		return nil
+	}
+
+	contractMap := make(map[uint64]*model.Contract)
+	for i := range contracts {
+		c := &contracts[i]
+		if c.ContractAddress == "" || c.NodeURL == "" {
+			continue
+		}
+		contractMap[c.ID] = c
+	}
+
+	// 2. 查询 EXECUTION 状态且 EndTime <= 当前时间的池子
+	db := database.GetDB()
+	nowStr := strconv.FormatInt(time.Now().Unix(), 10)
+	var finishPools []model.Poolbases
+	if err := db.WithContext(ctx).
+		Where("state = ? AND end_time <= ?", model.PoolStateExecution, nowStr).
+		Find(&finishPools).Error; err != nil {
+		return fmt.Errorf("query finishable pools error: %w", err)
+	}
+	if len(finishPools) == 0 {
+		logger.Info("[schedule] FinishService: no finishable pools found")
+		return nil
+	}
+
+	// 3. 按 chainID 分组
+	chainPools := make(map[string][]model.Poolbases)
+	for _, p := range finishPools {
+		chainPools[p.ChainID] = append(chainPools[p.ChainID], p)
+	}
+
+	// 4. 获取 operator 私钥
+	privKeyHex := config.Get().Settle.OperatorPrivateKey
+	if privKeyHex == "" {
+		return fmt.Errorf("finish operator private key not configured")
+	}
+
+	// 5. 按链处理
+	for chainID, pools := range chainPools {
+		// 查找该链上任意一个合约获取 RPC URL
+		var rpcURL string
+		for _, p := range pools {
+			if c, ok := contractMap[p.ContractID]; ok && c.NodeURL != "" {
+				rpcURL = c.NodeURL
+				break
+			}
+		}
+		if rpcURL == "" {
+			logger.Warn("[schedule] FinishService: no rpc url for chain", logger.String("chainID", chainID))
+			continue
+		}
+
+		// 连接 RPC（读+写共享一个连接，每笔交易独立获取 nonce）
+		client, err := ethclient.Dial(rpcURL)
+		if err != nil {
+			logger.Warn("[schedule] FinishService: dial rpc error",
+				logger.String("chainID", chainID), logger.Err(err))
+			continue
+		}
+
+		// 为该链上每个合约创建只读 caller 用于 checkCanFinish
+		type poolCaller struct {
+			contract *model.Contract
+			instance *bindcode.PledgePoolCaller
+		}
+		callers := make(map[uint64]*poolCaller)
+		for _, p := range pools {
+			if _, ok := callers[p.ContractID]; ok {
+				continue
+			}
+			c, ok := contractMap[p.ContractID]
+			if !ok {
+				continue
+			}
+			instance, err := bindcode.NewPledgePoolCaller(common.HexToAddress(c.ContractAddress), client)
+			if err != nil {
+				logger.Warn("[schedule] FinishService: new pledge pool caller error",
+					logger.Uint64("contractID", p.ContractID), logger.Err(err))
+				continue
+			}
+			callers[p.ContractID] = &poolCaller{contract: c, instance: instance}
+		}
+
+		// 遍历检测并执行完成
+		for _, p := range pools {
+			caller, ok := callers[p.ContractID]
+			if !ok {
+				continue
+			}
+
+			pid := big.NewInt(int64(p.PoolID))
+			canFinish, err := caller.instance.CheckCanFinish(nil, pid)
+			if err != nil {
+				logger.Warn("[schedule] FinishService: checkCanFinish error",
+					logger.Int("poolID", p.PoolID),
+					logger.Uint64("contractID", p.ContractID),
+					logger.Err(err))
+				continue
+			}
+			if !canFinish {
+				logger.Info("[schedule] FinishService: pool not ready for finish",
+					logger.Int("poolID", p.PoolID))
+				continue
+			}
+
+			logger.Info("[schedule] FinishService: pool is finishable, executing finish",
+				logger.Int("poolID", p.PoolID))
+
+			// 执行完成交易（独立连接，确保 nonce 正确）
+			if err := finishPoolTx(ctx, rpcURL, privKeyHex, caller.contract.ContractAddress, p.PoolID); err != nil {
+				logger.Warn("[schedule] FinishService: finish pool tx error",
+					logger.Int("poolID", p.PoolID), logger.Err(err))
+			}
+		}
+		client.Close()
+	}
+
+	logger.Info("[schedule] FinishService completed")
+	return nil
+}
+
+// finishPoolTx 执行 FinishPool 链上交易，与 settlePoolTx 类似，调用合约的 finishPool 方法
+func finishPoolTx(ctx context.Context, rpcURL, privKeyHex, contractAddr string, poolID int) error {
+	client, err := ethclient.Dial(rpcURL)
+	if err != nil {
+		return fmt.Errorf("dial rpc error: %w", err)
+	}
+	defer client.Close()
+
+	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(privKeyHex, "0x"))
+	if err != nil {
+		return fmt.Errorf("parse private key error: %w", err)
+	}
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+
+	nonce, err := client.PendingNonceAt(ctx, fromAddress)
+	if err != nil {
+		return fmt.Errorf("get nonce error: %w", err)
+	}
+	gasPrice, err := client.SuggestGasPrice(ctx)
+	if err != nil {
+		return fmt.Errorf("suggest gas price error: %w", err)
+	}
+	chainID, err := client.ChainID(ctx)
+	if err != nil {
+		return fmt.Errorf("get chain id error: %w", err)
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return fmt.Errorf("create transactor error: %w", err)
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.GasPrice = gasPrice
+	auth.GasLimit = uint64(8000000)
+
+	pool, err := bindcode.NewPledgePool(common.HexToAddress(contractAddr), client)
+	if err != nil {
+		return fmt.Errorf("new pledge pool error: %w", err)
+	}
+
+	tx, err := pool.FinishPool(auth, big.NewInt(int64(poolID)))
+	if err != nil {
+		return fmt.Errorf("finish pool tx error: %w", err)
+	}
+
+	receipt, err := bind.WaitMined(ctx, client, tx)
+	if err != nil {
+		return fmt.Errorf("wait mined error: %w", err)
+	}
+	if receipt.Status == 0 {
+		return fmt.Errorf("finish transaction reverted for pool %d", poolID)
+	}
+
+	logger.Info("[schedule] finishPoolTx confirmed",
+		logger.Int("poolID", poolID),
+		logger.String("txHash", tx.Hash().Hex()))
+	return nil
+}
+
+// ==================== 4. liquidateService — 清算检测与执行 ====================
+
+// LiquidateService 清算检测定时任务，每 5 分钟执行一次
+// 查询 EXECUTION 状态且 EndTime <= 当前时间的池子，调用链上 checkCanLiquidate 检测，
+// 可清算则执行 LiquidatePool 交易
+func LiquidateService(ctx context.Context) error {
+	logger.Info("[schedule] LiquidateService start: checking liquidatable pools")
+
+	// 1. 从缓存或 DB 获取所有 PledgePool 合约
+	contracts, err := getPledgePoolContracts(ctx)
+	if err != nil {
+		return fmt.Errorf("get pledge pool contracts error: %w", err)
+	}
+	if len(contracts) == 0 {
+		return nil
+	}
+
+	contractMap := make(map[uint64]*model.Contract)
+	for i := range contracts {
+		c := &contracts[i]
+		if c.ContractAddress == "" || c.NodeURL == "" {
+			continue
+		}
+		contractMap[c.ID] = c
+	}
+
+	// 2. 查询 EXECUTION 状态且 EndTime <= 当前时间的池子
+	db := database.GetDB()
+	nowStr := strconv.FormatInt(time.Now().Unix(), 10)
+	var liquidatePools []model.Poolbases
+	if err := db.WithContext(ctx).
+		Where("state = ? AND end_time <= ?", model.PoolStateExecution, nowStr).
+		Find(&liquidatePools).Error; err != nil {
+		return fmt.Errorf("query liquidatable pools error: %w", err)
+	}
+	if len(liquidatePools) == 0 {
+		logger.Info("[schedule] LiquidateService: no liquidatable pools found")
+		return nil
+	}
+
+	// 3. 按 chainID 分组
+	chainPools := make(map[string][]model.Poolbases)
+	for _, p := range liquidatePools {
+		chainPools[p.ChainID] = append(chainPools[p.ChainID], p)
+	}
+
+	// 4. 获取 operator 私钥
+	privKeyHex := config.Get().Settle.OperatorPrivateKey
+	if privKeyHex == "" {
+		return fmt.Errorf("liquidate operator private key not configured")
+	}
+
+	// 5. 按链处理
+	for chainID, pools := range chainPools {
+		var rpcURL string
+		for _, p := range pools {
+			if c, ok := contractMap[p.ContractID]; ok && c.NodeURL != "" {
+				rpcURL = c.NodeURL
+				break
+			}
+		}
+		if rpcURL == "" {
+			logger.Warn("[schedule] LiquidateService: no rpc url for chain", logger.String("chainID", chainID))
+			continue
+		}
+
+		client, err := ethclient.Dial(rpcURL)
+		if err != nil {
+			logger.Warn("[schedule] LiquidateService: dial rpc error",
+				logger.String("chainID", chainID), logger.Err(err))
+			continue
+		}
+
+		type poolCaller struct {
+			contract *model.Contract
+			instance *bindcode.PledgePoolCaller
+		}
+		callers := make(map[uint64]*poolCaller)
+		for _, p := range pools {
+			if _, ok := callers[p.ContractID]; ok {
+				continue
+			}
+			c, ok := contractMap[p.ContractID]
+			if !ok {
+				continue
+			}
+			instance, err := bindcode.NewPledgePoolCaller(common.HexToAddress(c.ContractAddress), client)
+			if err != nil {
+				logger.Warn("[schedule] LiquidateService: new pledge pool caller error",
+					logger.Uint64("contractID", p.ContractID), logger.Err(err))
+				continue
+			}
+			callers[p.ContractID] = &poolCaller{contract: c, instance: instance}
+		}
+
+		for _, p := range pools {
+			caller, ok := callers[p.ContractID]
+			if !ok {
+				continue
+			}
+
+			pid := big.NewInt(int64(p.PoolID))
+			canLiquidate, err := caller.instance.CheckCanLiquidate(nil, pid)
+			if err != nil {
+				logger.Warn("[schedule] LiquidateService: checkCanLiquidate error",
+					logger.Int("poolID", p.PoolID),
+					logger.Uint64("contractID", p.ContractID),
+					logger.Err(err))
+				continue
+			}
+			if !canLiquidate {
+				logger.Info("[schedule] LiquidateService: pool not ready for liquidate",
+					logger.Int("poolID", p.PoolID))
+				continue
+			}
+
+			logger.Info("[schedule] LiquidateService: pool is liquidatable, executing liquidate",
+				logger.Int("poolID", p.PoolID))
+
+			if err := liquidatePoolTx(ctx, rpcURL, privKeyHex, caller.contract.ContractAddress, p.PoolID); err != nil {
+				logger.Warn("[schedule] LiquidateService: liquidate pool tx error",
+					logger.Int("poolID", p.PoolID), logger.Err(err))
+			}
+		}
+		client.Close()
+	}
+
+	logger.Info("[schedule] LiquidateService completed")
+	return nil
+}
+
+// liquidatePoolTx 执行 LiquidatePool 链上交易，调用合约的 liquidatePool 方法
+func liquidatePoolTx(ctx context.Context, rpcURL, privKeyHex, contractAddr string, poolID int) error {
+	client, err := ethclient.Dial(rpcURL)
+	if err != nil {
+		return fmt.Errorf("dial rpc error: %w", err)
+	}
+	defer client.Close()
+
+	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(privKeyHex, "0x"))
+	if err != nil {
+		return fmt.Errorf("parse private key error: %w", err)
+	}
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+
+	nonce, err := client.PendingNonceAt(ctx, fromAddress)
+	if err != nil {
+		return fmt.Errorf("get nonce error: %w", err)
+	}
+	gasPrice, err := client.SuggestGasPrice(ctx)
+	if err != nil {
+		return fmt.Errorf("suggest gas price error: %w", err)
+	}
+	chainID, err := client.ChainID(ctx)
+	if err != nil {
+		return fmt.Errorf("get chain id error: %w", err)
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return fmt.Errorf("create transactor error: %w", err)
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.GasPrice = gasPrice
+	auth.GasLimit = uint64(8000000)
+
+	pool, err := bindcode.NewPledgePool(common.HexToAddress(contractAddr), client)
+	if err != nil {
+		return fmt.Errorf("new pledge pool error: %w", err)
+	}
+
+	tx, err := pool.LiquidatePool(auth, big.NewInt(int64(poolID)))
+	if err != nil {
+		return fmt.Errorf("liquidate pool tx error: %w", err)
+	}
+
+	receipt, err := bind.WaitMined(ctx, client, tx)
+	if err != nil {
+		return fmt.Errorf("wait mined error: %w", err)
+	}
+	if receipt.Status == 0 {
+		return fmt.Errorf("liquidate transaction reverted for pool %d", poolID)
+	}
+
+	logger.Info("[schedule] liquidatePoolTx confirmed",
+		logger.Int("poolID", poolID),
+		logger.String("txHash", tx.Hash().Hex()))
+	return nil
+}

@@ -14,8 +14,10 @@ import (
 
 // 任务类型常量
 const (
-	TypePoolInfo   = "schedule:pool_info"
-	TypePoolSettle = "schedule:pool_settle"
+	TypePoolInfo      = "schedule:pool_info"
+	TypePoolSettle    = "schedule:pool_settle"
+	TypePoolFinish    = "schedule:pool_finish"
+	TypePoolLiquidate = "schedule:pool_liquidate"
 )
 
 // EmptyPayload 无需参数的通用任务载荷
@@ -98,6 +100,16 @@ func registerHandlers(srv *sasynq.Server) {
 			return SettleService(ctx)
 		},
 	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypePoolFinish, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return FinishService(ctx)
+		},
+	))
+	sasynq.RegisterTaskHandler(srv.Mux(), TypePoolLiquidate, sasynq.HandleFunc(
+		func(ctx context.Context, _ *EmptyPayload) error {
+			return LiquidateService(ctx)
+		},
+	))
 }
 
 // registerSchedulerTasks 注册所有定时任务
@@ -110,6 +122,8 @@ func registerSchedulerTasks(scheduler *sasynq.Scheduler) error {
 	}{
 		{cron: "@every 2m", typeName: TypePoolInfo, payload: &EmptyPayload{}, desc: "资金池数据同步"},
 		{cron: "@every 5m", typeName: TypePoolSettle, payload: &EmptyPayload{}, desc: "资金池结算"},
+		{cron: "@every 5m", typeName: TypePoolFinish, payload: &EmptyPayload{}, desc: "资金池到期完成"},
+		{cron: "@every 5m", typeName: TypePoolLiquidate, payload: &EmptyPayload{}, desc: "资金池清算检测"},
 	}
 
 	for _, t := range tasks {

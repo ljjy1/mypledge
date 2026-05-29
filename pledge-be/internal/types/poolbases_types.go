@@ -26,17 +26,12 @@ type CreatePoolbasesRequest struct {
 	LendDebtToken          string `json:"lendDebtToken" binding:""`          // 出借侧池子代币/合约地址(出借凭证)
 	BorrowDebtToken        string `json:"borrowDebtToken" binding:""`        // 借入(抵押)侧池子代币/合约地址(质押资产)
 	AutoLiquidateThreshold string `json:"autoLiquidateThreshold" binding:""` // 自动清算阈值(精度值)
-	BorrowTokenInfo        string `json:"borrowTokenInfo" binding:""`        // 借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等
-	LendTokenInfo          string `json:"lendTokenInfo" binding:""`          // 出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等
 	ChainID                string `json:"chainID" binding:""`                // 链 ID: 56=BSC 主网 97=BSC 测试网
-	LendTokenSymbol        string `json:"lendTokenSymbol" binding:""`        // 出借代币符号，如 BUSD
-	BorrowTokenSymbol      string `json:"borrowTokenSymbol" binding:""`      // 借入(抵押)代币符号，如 BTC
 }
 
 // UpdatePoolbasesByIDRequest 更新池子基础信息请求参数
 type UpdatePoolbasesByIDRequest struct {
-	ID uint64 `json:"id" binding:""` // uint64 id
-	// 主键ID
+	ID                     uint64 `json:"id" binding:""`                     // uint64 id
 	PoolID                 int    `json:"poolID" binding:""`                 // 业务池子 ID，与链上 pool 对应
 	SettleTime             string `json:"settleTime" binding:""`             // 结算开始时间戳
 	EndTime                string `json:"endTime" binding:""`                // 池子结束时间戳
@@ -51,17 +46,12 @@ type UpdatePoolbasesByIDRequest struct {
 	LendDebtToken          string `json:"lendDebtToken" binding:""`          // 出借侧池子代币/合约地址(出借凭证)
 	BorrowDebtToken        string `json:"borrowDebtToken" binding:""`        // 借入(抵押)侧池子代币/合约地址(质押资产)
 	AutoLiquidateThreshold string `json:"autoLiquidateThreshold" binding:""` // 自动清算阈值(精度值)
-	BorrowTokenInfo        string `json:"borrowTokenInfo" binding:""`        // 借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等
-	LendTokenInfo          string `json:"lendTokenInfo" binding:""`          // 出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等
 	ChainID                string `json:"chainID" binding:""`                // 链 ID: 56=BSC 主网 97=BSC 测试网
-	LendTokenSymbol        string `json:"lendTokenSymbol" binding:""`        // 出借代币符号，如 BUSD
-	BorrowTokenSymbol      string `json:"borrowTokenSymbol" binding:""`      // 借入(抵押)代币符号，如 BTC
 }
 
 // PoolbasesObjDetail 池子基础信息详情
 type PoolbasesObjDetail struct {
-	ID uint64 `json:"id"` // convert to uint64 id
-	// 主键ID
+	ID                     uint64     `json:"id"`                     // convert to uint64 id
 	PoolID                 int        `json:"poolID"`                 // 业务池子 ID，与链上 pool 对应
 	SettleTime             string     `json:"settleTime"`             // 结算开始时间戳
 	EndTime                string     `json:"endTime"`                // 池子结束时间戳
@@ -76,11 +66,7 @@ type PoolbasesObjDetail struct {
 	LendDebtToken          string     `json:"lendDebtToken"`          // 出借侧池子代币/合约地址(出借凭证)
 	BorrowDebtToken        string     `json:"borrowDebtToken"`        // 借入(抵押)侧池子代币/合约地址(质押资产)
 	AutoLiquidateThreshold string     `json:"autoLiquidateThreshold"` // 自动清算阈值(精度值)
-	BorrowTokenInfo        string     `json:"borrowTokenInfo"`        // 借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等
-	LendTokenInfo          string     `json:"lendTokenInfo"`          // 出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等
 	ChainID                string     `json:"chainID"`                // 链 ID: 56=BSC 主网 97=BSC 测试网
-	LendTokenSymbol        string     `json:"lendTokenSymbol"`        // 出借代币符号，如 BUSD
-	BorrowTokenSymbol      string     `json:"borrowTokenSymbol"`      // 借入(抵押)代币符号，如 BTC
 	CreatedAt              *time.Time `json:"createdAt"`              // 创建时间
 	UpdatedAt              *time.Time `json:"updatedAt"`              // 更新时间
 }

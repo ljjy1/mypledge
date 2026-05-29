@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -110,9 +110,7 @@ type ContractHandler interface {
 // contractHandler 合约操作处理器实现，聚合了合约、代币、借贷池基础信息和借贷池运行数据的 DAO
 type contractHandler struct {
 	iDao         dao.ContractDao
-	tokenDao     dao.TokenInfoDao
 	poolbasesDao dao.PoolbasesDao
-	pooldataDao  dao.PooldataDao
 }
 
 // NewContractHandler 创建合约操作处理器实例，初始化合约、代币、借贷池基础信息和运行数据的 DAO
@@ -122,17 +120,9 @@ func NewContractHandler() ContractHandler {
 			database.GetDB(), // db driver is mysql
 			cache.NewContractCache(database.GetCacheType()),
 		),
-		tokenDao: dao.NewTokenInfoDao(
-			database.GetDB(),
-			nil, // deploy 场景无需缓存
-		),
 		poolbasesDao: dao.NewPoolbasesDao(
 			database.GetDB(),
 			cache.NewPoolbasesCache(database.GetCacheType()),
-		),
-		pooldataDao: dao.NewPooldataDao(
-			database.GetDB(),
-			cache.NewPooldataCache(database.GetCacheType()),
 		),
 	}
 }
@@ -438,7 +428,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "BscPledgeOracle", oracleAddr.Hex(), oracleTx.Hash().Hex(), chainID, form, "", 0)
+	err = saveDeploy(ctx, h, "BscPledgeOracle", oracleAddr.Hex(), oracleTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -468,7 +458,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "DebtToken(lend)", lendDebtAddr.Hex(), lendDebtTx.Hash().Hex(), chainID, form, debtTokenSym, 18)
+	err = saveDeploy(ctx, h, "DebtToken(lend)", lendDebtAddr.Hex(), lendDebtTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -498,7 +488,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "DebtToken(borrow)", borrowDebtAddr.Hex(), borrowDebtTx.Hash().Hex(), chainID, form, debtTokenSym2, 18)
+	err = saveDeploy(ctx, h, "DebtToken(borrow)", borrowDebtAddr.Hex(), borrowDebtTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -530,7 +520,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "MockTestERC20(lend)", lendTokenAddr.Hex(), lendTokenTx.Hash().Hex(), chainID, form, lendSym, 18)
+	err = saveDeploy(ctx, h, "MockTestERC20(lend)", lendTokenAddr.Hex(), lendTokenTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -560,7 +550,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "MockTestERC20(borrow)", borrowTokenAddr.Hex(), borrowTokenTx.Hash().Hex(), chainID, form, borrowSym, 18)
+	err = saveDeploy(ctx, h, "MockTestERC20(borrow)", borrowTokenAddr.Hex(), borrowTokenTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -588,7 +578,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "WETH", wethAddr.Hex(), wethTx.Hash().Hex(), chainID, form, "WETH", 18)
+	err = saveDeploy(ctx, h, "WETH", wethAddr.Hex(), wethTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -616,7 +606,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "UniswapV2Factory", factoryAddr.Hex(), factoryTx.Hash().Hex(), chainID, form, "", 0)
+	err = saveDeploy(ctx, h, "UniswapV2Factory", factoryAddr.Hex(), factoryTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -644,7 +634,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "UniswapV2Router02", routerAddr.Hex(), routerTx.Hash().Hex(), chainID, form, "", 0)
+	err = saveDeploy(ctx, h, "UniswapV2Router02", routerAddr.Hex(), routerTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -672,7 +662,7 @@ func (h *contractHandler) Deploy(c *gin.Context) {
 		response.Error(c, ecode.ErrDeploySend)
 		return
 	}
-	err = saveDeploy(ctx, h, "PledgePool", poolAddr.Hex(), poolTx.Hash().Hex(), chainID, form, "", 0)
+	err = saveDeploy(ctx, h, "PledgePool", poolAddr.Hex(), poolTx.Hash().Hex(), chainID, form)
 	if err != nil {
 		return
 	}
@@ -818,9 +808,20 @@ func (h *contractHandler) CreatePool(c *gin.Context) {
 	}
 	logger.Info("pool created on chain", logger.Uint64("poolID", poolID), logger.String("txHash", tx.Hash().Hex()))
 
-	// 10. 保存 poolbases 记录
+	// 10. 查询合约记录获取 ContractID
 	ctx := middleware.WrapCtx(c)
+	var contractRecord model.Contract
+	if err := database.GetDB().WithContext(ctx).
+		Where("contract_address = ? AND contract_name = 'PledgePool'", form.PoolContractAddress).
+		First(&contractRecord).Error; err != nil {
+		logger.Warn("[CreatePool] contract not found by address",
+			logger.String("address", form.PoolContractAddress),
+			logger.Err(err))
+	}
+
+	// 11. 保存 poolbases 记录
 	poolbases := &model.Poolbases{
+		ContractID:             contractRecord.ID,
 		PoolID:                 int(poolID),
 		SettleTime:             form.SettleTime,
 		EndTime:                form.EndTime,
@@ -829,13 +830,11 @@ func (h *contractHandler) CreatePool(c *gin.Context) {
 		MortgageRate:           form.MortgageRate,
 		LendToken:              form.LendToken,
 		BorrowToken:            form.BorrowToken,
-		State:                  "1", // 1=进行中
+		State:                  model.PoolStateMatch,
 		LendDebtToken:          form.LendDebtToken,
 		BorrowDebtToken:        form.BorrowDebtToken,
 		AutoLiquidateThreshold: form.AutoLiquidateThreshold,
 		ChainID:                form.ChainID,
-		LendTokenSymbol:        form.LendTokenSymbol,
-		BorrowTokenSymbol:      form.BorrowTokenSymbol,
 	}
 	if err := h.poolbasesDao.Create(ctx, poolbases); err != nil {
 		logger.Error("poolbasesDao.Create error", logger.Err(err))
@@ -843,15 +842,14 @@ func (h *contractHandler) CreatePool(c *gin.Context) {
 		return
 	}
 
-	// 11. 保存 pooldata 记录（初始清算数据为零）
-	pooldata := &model.Pooldata{
-		ChainID: form.ChainID,
-		PoolID:  strconv.FormatUint(poolID, 10),
-	}
-	if err := h.pooldataDao.Create(ctx, pooldata); err != nil {
-		logger.Error("pooldataDao.Create error", logger.Err(err))
-		response.Error(c, ecode.ErrCreatePoolSaveDB)
-		return
+	// 12. 将新池子加入 Redis 活跃池缓存（按链 ID 分组）
+	redisCli := database.GetRedisCli()
+	cacheKey := fmt.Sprintf("active_pools:%s", poolbases.ChainID)
+	entry := fmt.Sprintf("%d:%d", contractRecord.ID, poolbases.PoolID)
+	exists, _ := redisCli.Exists(ctx, cacheKey).Result()
+	redisCli.RPush(ctx, cacheKey, entry)
+	if exists == 0 {
+		redisCli.Expire(ctx, cacheKey, 24*time.Hour)
 	}
 
 	response.Success(c, gin.H{
@@ -956,7 +954,7 @@ func waitReceipt(c *gin.Context, client *ethclient.Client, tx *ethtypes.Transact
 }
 
 // saveDeploy 将已部署的合约记录保存到数据库，如果是代币合约还会同时写入 token_info 表
-func saveDeploy(ctx context.Context, h *contractHandler, name, addr, txHash string, chainID *big.Int, form *types.DeployRequest, tokenSymbol string, tokenDecimals int) error {
+func saveDeploy(ctx context.Context, h *contractHandler, name, addr, txHash string, chainID *big.Int, form *types.DeployRequest) error {
 	privKey, err := crypto.HexToECDSA(strings.TrimPrefix(form.PrivateKey, "0x"))
 	if err != nil {
 		logger.Error("private key error", logger.Err(err))
@@ -971,21 +969,32 @@ func saveDeploy(ctx context.Context, h *contractHandler, name, addr, txHash stri
 		TxHash:           txHash,
 		PublisherAddress: publisher,
 	}
+	// 记录代币合约的符号和精度
+	switch name {
+	case "MockTestERC20(lend)":
+		record.IsToken = true
+		record.TokenSymbol = form.LendTokenSym
+		record.TokenDecimals = 18
+	case "MockTestERC20(borrow)":
+		record.IsToken = true
+		record.TokenSymbol = form.BorrowTokenSym
+		record.TokenDecimals = 18
+	case "WETH":
+		record.IsToken = true
+		record.TokenSymbol = "WETH"
+		record.TokenDecimals = 18
+	case "DebtToken(lend)":
+		record.IsToken = true
+		record.TokenSymbol = ifEmpty(form.DebtTokenSym, "LDT")
+		record.TokenDecimals = 18
+	case "DebtToken(borrow)":
+		record.IsToken = true
+		record.TokenSymbol = ifEmpty(form.DebtTokenSym, "BDT")
+		record.TokenDecimals = 18
+	}
 	if err := h.iDao.Create(ctx, record); err != nil {
 		logger.Error("save deploy record error", logger.Err(err))
 		return err
-	}
-	// 如果是代币合约，同时写入 token_info
-	if tokenSymbol != "" {
-		token := &model.TokenInfo{
-			Symbol:   tokenSymbol,
-			Token:    addr,
-			ChainID:  chainID.String(),
-			Decimals: tokenDecimals,
-		}
-		if err := h.tokenDao.Create(ctx, token); err != nil {
-			logger.Warn("save token info error", logger.Err(err), logger.String("symbol", tokenSymbol))
-		}
 	}
 	return nil
 }

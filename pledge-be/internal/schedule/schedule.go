@@ -14,12 +14,8 @@ import (
 
 // 任务类型常量
 const (
-	TypePoolInfo       = "schedule:pool_info"
-	TypeTokenPrice     = "schedule:token_price"
-	TypeTokenSymbol    = "schedule:token_symbol"
-	TypeTokenLogo      = "schedule:token_logo"
-	TypeBalanceMonitor = "schedule:balance_monitor"
-	TypeSavePlgrPrice  = "schedule:save_plgr_price"
+	TypePoolInfo   = "schedule:pool_info"
+	TypePoolSettle = "schedule:pool_settle"
 )
 
 // EmptyPayload 无需参数的通用任务载荷
@@ -97,29 +93,9 @@ func registerHandlers(srv *sasynq.Server) {
 			return PoolService(ctx)
 		},
 	))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenPrice, sasynq.HandleFunc(
+	sasynq.RegisterTaskHandler(srv.Mux(), TypePoolSettle, sasynq.HandleFunc(
 		func(ctx context.Context, _ *EmptyPayload) error {
-			return TokenPriceService(ctx)
-		},
-	))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenSymbol, sasynq.HandleFunc(
-		func(ctx context.Context, _ *EmptyPayload) error {
-			return TokenSymbolService(ctx)
-		},
-	))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypeTokenLogo, sasynq.HandleFunc(
-		func(ctx context.Context, _ *EmptyPayload) error {
-			return TokenLogoService(ctx)
-		},
-	))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypeBalanceMonitor, sasynq.HandleFunc(
-		func(ctx context.Context, _ *EmptyPayload) error {
-			return BalanceMonitorService(ctx)
-		},
-	))
-	sasynq.RegisterTaskHandler(srv.Mux(), TypeSavePlgrPrice, sasynq.HandleFunc(
-		func(ctx context.Context, _ *EmptyPayload) error {
-			return SavePlgrPriceTestNetService(ctx)
+			return SettleService(ctx)
 		},
 	))
 }
@@ -133,11 +109,7 @@ func registerSchedulerTasks(scheduler *sasynq.Scheduler) error {
 		desc     string
 	}{
 		{cron: "@every 2m", typeName: TypePoolInfo, payload: &EmptyPayload{}, desc: "资金池数据同步"},
-		{cron: "@every 1m", typeName: TypeTokenPrice, payload: &EmptyPayload{}, desc: "代币价格同步"},
-		{cron: "@every 2h", typeName: TypeTokenSymbol, payload: &EmptyPayload{}, desc: "代币 Symbol 同步"},
-		{cron: "@every 2h", typeName: TypeTokenLogo, payload: &EmptyPayload{}, desc: "代币 Logo 同步"},
-		{cron: "@every 30m", typeName: TypeBalanceMonitor, payload: &EmptyPayload{}, desc: "合约余额监控"},
-		{cron: "@every 30m", typeName: TypeSavePlgrPrice, payload: &EmptyPayload{}, desc: "写入 PLGR 价格"},
+		{cron: "@every 5m", typeName: TypePoolSettle, payload: &EmptyPayload{}, desc: "资金池结算"},
 	}
 
 	for _, t := range tasks {
@@ -167,11 +139,6 @@ func runInitialTasks() {
 		fn   func(context.Context) error
 	}{
 		{"PoolInfo", PoolService},
-		{"TokenPrice", TokenPriceService},
-		{"TokenSymbol", TokenSymbolService},
-		{"TokenLogo", TokenLogoService},
-		{"BalanceMonitor", BalanceMonitorService},
-		{"SavePlgrPrice", SavePlgrPriceTestNetService},
 	}
 
 	for _, t := range tasks {

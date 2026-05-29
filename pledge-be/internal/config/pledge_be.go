@@ -40,6 +40,11 @@ type Config struct {
 	Logger     Logger       `yaml:"logger" json:"logger"`
 	NacosRd    NacosRd      `yaml:"nacosRd" json:"nacosRd"`
 	Redis      Redis        `yaml:"redis" json:"redis"`
+	Settle     Settle       `yaml:"settle" json:"settle"`
+}
+
+type Settle struct {
+	OperatorPrivateKey string `yaml:"operatorPrivateKey" json:"operatorPrivateKey"`
 }
 
 type Consul struct {

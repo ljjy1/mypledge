@@ -13,6 +13,9 @@ type Contract struct {
 	ContractName     string     `gorm:"column:contract_name;type:varchar(100)" json:"contractName"`                          // 合约名称（如 PledgePool、WETH）
 	TxHash           string     `gorm:"column:tx_hash;type:varchar(100)" json:"txHash"`                                      // 部署交易哈希
 	PublisherAddress string     `gorm:"column:publisher_address;type:varchar(255);not null" json:"publisherAddress"`         // 合约发布者地址
+	IsToken          bool       `gorm:"column:is_token;type:tinyint(1);default:0" json:"isToken"`                            // 是否为代币合约
+	TokenSymbol      string     `gorm:"column:token_symbol;type:varchar(50)" json:"tokenSymbol"`                             // 代币符号
+	TokenDecimals    int        `gorm:"column:token_decimals;type:int(11);default:0" json:"tokenDecimals"`                   // 代币精度(小数点位数)
 	CreatedAt        *time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;not null" json:"createdAt"` // 创建时间
 	UpdatedAt        *time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;not null" json:"updatedAt"` // 更新时间
 }
@@ -31,6 +34,9 @@ var ContractColumnNames = map[string]bool{
 	"contract_name":     true,
 	"tx_hash":           true,
 	"publisher_address": true,
+	"is_token":          true,
+	"token_symbol":      true,
+	"token_decimals":    true,
 	"created_at":        true,
 	"updated_at":        true,
 }

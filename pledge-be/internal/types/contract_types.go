@@ -18,30 +18,37 @@ type CreateContractRequest struct {
 	ContractName     string `json:"contractName" binding:""`     // 合约名称
 	TxHash           string `json:"txHash" binding:""`           // 部署交易哈希
 	PublisherAddress string `json:"publisherAddress" binding:""` // 合约发布者地址
+	IsToken          bool   `json:"isToken"`                     // 是否为代币合约
+	TokenSymbol      string `json:"tokenSymbol"`                 // 代币符号
+	TokenDecimals    int    `json:"tokenDecimals"`               // 代币精度(小数点位数)
 }
 
 // UpdateContractByIDRequest 更新合约请求参数
 type UpdateContractByIDRequest struct {
-	ID uint64 `json:"id" binding:""` // uint64 id
-	// 主键ID
+	ID               uint64 `json:"id" binding:""`               // uint64 id
 	NodeURL          string `json:"nodeURL" binding:""`          // 合约发布网站地址，如127.0.0.1:8454
 	ChainID          string `json:"chainID" binding:""`          // 链 ID: 56=BSC 主网 97=BSC 测试网
 	ContractAddress  string `json:"contractAddress" binding:""`  // 合约地址
 	ContractName     string `json:"contractName" binding:""`     // 合约名称
 	TxHash           string `json:"txHash" binding:""`           // 部署交易哈希
 	PublisherAddress string `json:"publisherAddress" binding:""` // 合约发布者地址
+	IsToken          bool   `json:"isToken"`                     // 是否为代币合约
+	TokenSymbol      string `json:"tokenSymbol"`                 // 代币符号
+	TokenDecimals    int    `json:"tokenDecimals"`               // 代币精度(小数点位数)
 }
 
 // ContractObjDetail 合约详情
 type ContractObjDetail struct {
-	ID uint64 `json:"id"` // convert to uint64 id
-	// 主键ID
+	ID               uint64     `json:"id"`               // convert to uint64 id
 	NodeURL          string     `json:"nodeURL"`          // 合约发布网站地址，如127.0.0.1:8454
 	ChainID          string     `json:"chainID"`          // 链 ID: 56=BSC 主网 97=BSC 测试网
 	ContractAddress  string     `json:"contractAddress"`  // 合约地址
 	ContractName     string     `json:"contractName"`     // 合约名称
 	TxHash           string     `json:"txHash"`           // 部署交易哈希
 	PublisherAddress string     `json:"publisherAddress"` // 合约发布者地址
+	IsToken          bool       `json:"isToken"`          // 是否为代币合约
+	TokenSymbol      string     `json:"tokenSymbol"`      // 代币符号
+	TokenDecimals    int        `json:"tokenDecimals"`    // 代币精度(小数点位数)
 	CreatedAt        *time.Time `json:"createdAt"`        // 创建时间
 	UpdatedAt        *time.Time `json:"updatedAt"`        // 更新时间
 }

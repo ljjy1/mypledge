@@ -15,6 +15,15 @@ import (
 // ==================== UniswapV2Factory 操作 ====================
 
 // FactoryCreatePair 创建交易对
+// @Summary Create a token pair on UniswapV2 factory
+// @Description Create a new token trading pair on the UniswapV2 factory contract
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.FactoryCreatePairRequest true "create pair params"
+// @Success 200 {object} types.FactoryCreatePairReply{}
+// @Router /api/v1/contract/factory/create-pair [post]
+// @Security BearerAuth
 func (h *contractHandler) FactoryCreatePair(c *gin.Context) {
 	form := &types.FactoryCreatePairRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -49,6 +58,15 @@ func (h *contractHandler) FactoryCreatePair(c *gin.Context) {
 }
 
 // FactorySetFeeTo 设置工厂手续费地址
+// @Summary Set factory fee address
+// @Description Set the fee address for the UniswapV2 factory contract
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.FactorySetFeeToRequest true "set fee to params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/factory/set-fee-to [post]
+// @Security BearerAuth
 func (h *contractHandler) FactorySetFeeTo(c *gin.Context) {
 	form := &types.FactorySetFeeToRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -79,6 +97,15 @@ func (h *contractHandler) FactorySetFeeTo(c *gin.Context) {
 }
 
 // FactoryGetPair 查询交易对地址
+// @Summary Get token pair address
+// @Description Query the trading pair address on UniswapV2 factory
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.FactoryGetPairRequest true "get pair params"
+// @Success 200 {object} types.FactoryPairReply{}
+// @Router /api/v1/contract/factory/get-pair [post]
+// @Security BearerAuth
 func (h *contractHandler) FactoryGetPair(c *gin.Context) {
 	form := &types.FactoryGetPairRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -111,6 +138,15 @@ func (h *contractHandler) FactoryGetPair(c *gin.Context) {
 // ==================== UniswapV2Router02 操作 ====================
 
 // RouterAddLiquidity 添加流动性
+// @Summary Add liquidity to a token pair
+// @Description Add liquidity to a UniswapV2 trading pair
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.RouterAddLiquidityRequest true "add liquidity params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/router/add-liquidity [post]
+// @Security BearerAuth
 func (h *contractHandler) RouterAddLiquidity(c *gin.Context) {
 	form := &types.RouterAddLiquidityRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -154,6 +190,15 @@ func (h *contractHandler) RouterAddLiquidity(c *gin.Context) {
 }
 
 // RouterSwapExactTokensForTokens 精确兑换(指定输入金额)
+// @Summary Swap exact tokens for tokens
+// @Description Swap an exact amount of input tokens for a minimum amount of output tokens
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.RouterSwapRequest true "swap params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/router/swap-exact-tokens-for-tokens [post]
+// @Security BearerAuth
 func (h *contractHandler) RouterSwapExactTokensForTokens(c *gin.Context) {
 	form := &types.RouterSwapRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -165,8 +210,6 @@ func (h *contractHandler) RouterSwapExactTokensForTokens(c *gin.Context) {
 	amountOutMin, _ := parseBigInt(form.AmountOutMin)
 	deadline, _ := parseBigInt(form.Deadline)
 
-	// 将请求中的路径地址字符串数组转换为以太坊 common.Address 数组
-	// 用于指定代币兑换路径（如 TokenA -> WETH -> TokenB）
 	path := make([]common.Address, len(form.Path))
 	for i, p := range form.Path {
 		path[i] = common.HexToAddress(p)
@@ -195,6 +238,15 @@ func (h *contractHandler) RouterSwapExactTokensForTokens(c *gin.Context) {
 }
 
 // RouterGetAmountsOut 查询兑换输出金额
+// @Summary Get swap output amounts
+// @Description Query expected output amounts for a given input along a swap path
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.RouterGetAmountsRequest true "get amounts params"
+// @Success 200 {object} types.RouterAmountsReply{}
+// @Router /api/v1/contract/router/get-amounts-out [post]
+// @Security BearerAuth
 func (h *contractHandler) RouterGetAmountsOut(c *gin.Context) {
 	form := &types.RouterGetAmountsRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -204,8 +256,6 @@ func (h *contractHandler) RouterGetAmountsOut(c *gin.Context) {
 
 	amountIn, _ := parseBigInt(form.AmountIn)
 
-	// 将请求中的路径地址字符串数组转换为以太坊 common.Address 数组
-	// 用于查询指定兑换路径的预期输出金额
 	path := make([]common.Address, len(form.Path))
 	for i, p := range form.Path {
 		path[i] = common.HexToAddress(p)
@@ -231,7 +281,6 @@ func (h *contractHandler) RouterGetAmountsOut(c *gin.Context) {
 		return
 	}
 
-	// 将 big.Int 输出金额数组转换为字符串数组，便于 JSON 序列化返回给前端
 	result := make([]string, len(amounts))
 	for i, v := range amounts {
 		result[i] = v.String()

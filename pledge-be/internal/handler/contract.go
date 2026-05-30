@@ -34,9 +34,6 @@ var _ ContractHandler = (*contractHandler)(nil)
 
 // ContractHandler 合约操作处理器接口，包含合约部署、借贷池操作、预言机、债务代币、ERC20、WETH、Uniswap 等全部功能
 type ContractHandler interface {
-	Create(c *gin.Context)
-	DeleteByID(c *gin.Context)
-	UpdateByID(c *gin.Context)
 	GetByID(c *gin.Context)
 	List(c *gin.Context)
 	Deploy(c *gin.Context)
@@ -125,118 +122,6 @@ func NewContractHandler() ContractHandler {
 			cache.NewPoolbasesCache(database.GetCacheType()),
 		),
 	}
-}
-
-// Create 创建新的合约记录
-// @Summary Create a new contract
-// @Description Creates a new contract entity using the provided data in the request body.
-// @Tags contract
-// @Accept json
-// @Produce json
-// @Param data body types.CreateContractRequest true "contract information"
-// @Success 200 {object} types.CreateContractReply{}
-// @Router /api/v1/contract [post]
-// @Security BearerAuth
-func (h *contractHandler) Create(c *gin.Context) {
-	form := &types.CreateContractRequest{}
-	err := c.ShouldBindJSON(form)
-	if err != nil {
-		logger.Warn("ShouldBindJSON error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
-		response.Error(c, ecode.InvalidParams)
-		return
-	}
-
-	contract := &model.Contract{}
-	err = copier.Copy(contract, form)
-	if err != nil {
-		response.Error(c, ecode.ErrCreateContract)
-		return
-	}
-	// Note: if copier.Copy cannot assign a value to a field, add it here
-
-	ctx := middleware.WrapCtx(c)
-	err = h.iDao.Create(ctx, contract)
-	if err != nil {
-		logger.Error("Create error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
-		return
-	}
-
-	response.Success(c, gin.H{"id": contract.ID})
-}
-
-// DeleteByID 根据 ID 删除合约记录
-// @Summary Delete a contract by id
-// @Description Deletes a existing contract identified by the given id in the path.
-// @Tags contract
-// @Accept json
-// @Produce json
-// @Param id path string true "id"
-// @Success 200 {object} types.DeleteContractByIDReply{}
-// @Router /api/v1/contract/{id} [delete]
-// @Security BearerAuth
-func (h *contractHandler) DeleteByID(c *gin.Context) {
-	_, id, isAbort := getContractIDFromPath(c)
-	if isAbort {
-		response.Error(c, ecode.InvalidParams)
-		return
-	}
-
-	ctx := middleware.WrapCtx(c)
-	err := h.iDao.DeleteByID(ctx, id)
-	if err != nil {
-		logger.Error("DeleteByID error", logger.Err(err), logger.Any("id", id), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
-		return
-	}
-
-	response.Success(c)
-}
-
-// UpdateByID 根据 ID 更新合约记录
-// @Summary Update a contract by id
-// @Description Updates the specified contract by given id in the path, support partial update.
-// @Tags contract
-// @Accept json
-// @Produce json
-// @Param id path string true "id"
-// @Param data body types.UpdateContractByIDRequest true "contract information"
-// @Success 200 {object} types.UpdateContractByIDReply{}
-// @Router /api/v1/contract/{id} [put]
-// @Security BearerAuth
-func (h *contractHandler) UpdateByID(c *gin.Context) {
-	_, id, isAbort := getContractIDFromPath(c)
-	if isAbort {
-		response.Error(c, ecode.InvalidParams)
-		return
-	}
-
-	form := &types.UpdateContractByIDRequest{}
-	err := c.ShouldBindJSON(form)
-	if err != nil {
-		logger.Warn("ShouldBindJSON error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
-		response.Error(c, ecode.InvalidParams)
-		return
-	}
-	form.ID = id
-
-	contract := &model.Contract{}
-	err = copier.Copy(contract, form)
-	if err != nil {
-		response.Error(c, ecode.ErrUpdateByIDContract)
-		return
-	}
-	// Note: if copier.Copy cannot assign a value to a field, add it here
-
-	ctx := middleware.WrapCtx(c)
-	err = h.iDao.UpdateByID(ctx, contract)
-	if err != nil {
-		logger.Error("UpdateByID error", logger.Err(err), logger.Any("form", form), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
-		return
-	}
-
-	response.Success(c)
 }
 
 // GetByID 根据 ID 查询合约记录

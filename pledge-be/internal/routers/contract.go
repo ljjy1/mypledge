@@ -26,11 +26,8 @@ func contractRouter(group *gin.RouterGroup, h handler.ContractHandler) {
 	// 这种情况下，不要使用上面的 g.Use(middleware.Auth())
 
 	// --- Contract 基础 CRUD ---
-	g.POST("/", h.Create)                // [post] /api/v1/contract
 	g.POST("/deploy", h.Deploy)          // [post] /api/v1/contract/deploy
 	g.POST("/create-pool", h.CreatePool) // [post] /api/v1/contract/create-pool
-	g.DELETE("/:id", h.DeleteByID)       // [delete] /api/v1/contract/:id
-	g.PUT("/:id", h.UpdateByID)          // [put] /api/v1/contract/:id
 	g.GET("/:id", h.GetByID)             // [get] /api/v1/contract/:id
 	g.POST("/list", h.List)              // [post] /api/v1/contract/list
 

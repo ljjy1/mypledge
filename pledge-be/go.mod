@@ -14,7 +14,6 @@ require (
 	github.com/swaggo/swag v1.16.6
 	golang.org/x/crypto v0.52.0
 	golang.org/x/sync v0.20.0
-	gorm.io/datatypes v1.2.7
 	gorm.io/gorm v1.31.1
 )
 

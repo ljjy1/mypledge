@@ -4,13 +4,14 @@ import (
 	"strconv"
 
 	"pledge-be/internal/config"
+	"pledge-be/internal/listener"
 	"pledge-be/internal/schedule"
 	"pledge-be/internal/server"
 
 	"github.com/go-dev-frame/sponge/pkg/app"
 )
 
-// CreateServices 创建所有服务实例（HTTP 服务和定时任务服务）
+// CreateServices 创建所有服务实例（HTTP 服务、定时任务服务和合约事件监听服务）
 func CreateServices() []app.IServer {
 	var cfg = config.Get()
 	var servers []app.IServer
@@ -25,6 +26,9 @@ func CreateServices() []app.IServer {
 
 	// create a schedule service (asynq scheduler + server)
 	servers = append(servers, schedule.NewScheduleServer())
+
+	// create an event listener service
+	servers = append(servers, listener.NewEventListener())
 
 	return servers
 }

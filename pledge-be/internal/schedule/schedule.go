@@ -144,8 +144,8 @@ func registerSchedulerTasks(scheduler *sasynq.Scheduler) error {
 func runInitialTasks() {
 	logger.Info("[schedule] running initial tasks...")
 
-	// 清空 Redis 缓存
-	EnsureRedisFlush()
+	// 清理定时任务相关的 Redis 缓存
+	cleanScheduleCache()
 
 	ctx := context.Background()
 	tasks := []struct {

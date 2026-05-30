@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-dev-frame/sponge/pkg/app"
 	"github.com/go-dev-frame/sponge/pkg/httpsrv"
+	"github.com/go-dev-frame/sponge/pkg/logger"
 
 	"pledge-be/internal/config"
 	"pledge-be/internal/routers"
@@ -33,6 +34,7 @@ func (s *httpServer) Start() error {
 
 // Stop 优雅关闭 HTTP 服务，设置 3 秒超时上下文
 func (s *httpServer) Stop() error {
+	logger.Info("[http] server is stopping...")
 	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second) //nolint
 	return s.server.Shutdown(ctx)
 }

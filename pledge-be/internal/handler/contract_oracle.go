@@ -15,6 +15,15 @@ import (
 // ==================== BscPledgeOracle 写入操作 ====================
 
 // OracleSetPrice 设置资产价格（管理员）
+// @Summary Set asset price in oracle
+// @Description Admin sets the price of an asset in the price oracle
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.OracleSetPriceRequest true "set price params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/oracle/set-price [post]
+// @Security BearerAuth
 func (h *contractHandler) OracleSetPrice(c *gin.Context) {
 	form := &types.OracleSetPriceRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -50,6 +59,15 @@ func (h *contractHandler) OracleSetPrice(c *gin.Context) {
 }
 
 // OracleSetPrices 批量设置价格（需要 assets, prices 数组参数）
+// @Summary Batch set asset prices (not yet implemented)
+// @Description Batch set prices for multiple assets - currently not fully implemented
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.OracleWriteRequest true "set prices params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/oracle/set-prices [post]
+// @Security BearerAuth
 func (h *contractHandler) OracleSetPrices(c *gin.Context) {
 	form := &types.OracleWriteRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -60,6 +78,15 @@ func (h *contractHandler) OracleSetPrices(c *gin.Context) {
 }
 
 // OracleSetAggregator 设置预言机聚合器（管理员）
+// @Summary Set oracle aggregator
+// @Description Admin sets the price aggregator for an asset
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.OracleSetAggregatorRequest true "set aggregator params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/oracle/set-aggregator [post]
+// @Security BearerAuth
 func (h *contractHandler) OracleSetAggregator(c *gin.Context) {
 	form := &types.OracleSetAggregatorRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -90,6 +117,15 @@ func (h *contractHandler) OracleSetAggregator(c *gin.Context) {
 }
 
 // OracleTransferOwnership 转移Oracle所有权（管理员）
+// @Summary Transfer oracle ownership
+// @Description Admin transfers ownership of the oracle contract to a new address
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.OracleWriteRequest true "transfer ownership params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/oracle/transfer-ownership [post]
+// @Security BearerAuth
 func (h *contractHandler) OracleTransferOwnership(c *gin.Context) {
 	form := &types.OracleWriteRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -122,6 +158,15 @@ func (h *contractHandler) OracleTransferOwnership(c *gin.Context) {
 // ==================== BscPledgeOracle 只读操作 ====================
 
 // OracleGetPrice 查询资产价格
+// @Summary Get asset price from oracle
+// @Description Query the current price of an asset from the price oracle
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.OracleGetPriceRequest true "get price params"
+// @Success 200 {object} types.OraclePriceReply{}
+// @Router /api/v1/contract/oracle/get-price [post]
+// @Security BearerAuth
 func (h *contractHandler) OracleGetPrice(c *gin.Context) {
 	form := &types.OracleGetPriceRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {

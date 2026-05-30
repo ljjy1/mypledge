@@ -1,6 +1,7 @@
 package database
 
 import (
+	"strings"
 	"sync"
 	"time"
 
@@ -9,6 +10,27 @@ import (
 
 	"pledge-be/internal/config"
 )
+
+// Redis 缓存 key 格式常量，schedule 和 listener 共享
+const (
+	RedisKeyActivePools     = "active_pools:%s"       // active_pools:<chainID>
+	RedisKeyPledgeContracts = "pledge_pool_contracts" // 精确 key
+	RedisKeyBaseInfo        = "base_info:pool_%s_%d"  // base_info:pool_<chainID>_<poolID>
+	RedisKeyDataInfo        = "data_info:pool_%s_%d"  // data_info:pool_<chainID>_<poolID>
+	RedisKeyEvents          = "events:%s"             // events:<chainID>
+)
+
+// RedisKeyPattern 从 key 格式常量推导 SCAN 匹配模式，提取第一个 % 前的部分加 *
+func RedisKeyPattern(format string) string {
+	idx := strings.Index(format, "%")
+	if idx < 0 {
+		return format // 无占位符，本身就是精确 key
+	}
+	if colon := strings.LastIndex(format[:idx], ":"); colon >= 0 {
+		return format[:colon+1] + "*"
+	}
+	return format[:idx] + "*"
+}
 
 var (
 	// ErrCacheNotFound No hit cache

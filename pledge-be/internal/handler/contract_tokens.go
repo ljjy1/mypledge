@@ -15,6 +15,15 @@ import (
 // ==================== ERC20 代币操作 ====================
 
 // TokenApprove 授权代币
+// @Summary Approve token spending
+// @Description Approve a spender address to spend a specified amount of tokens
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenApproveRequest true "approve params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/token/approve [post]
+// @Security BearerAuth
 func (h *contractHandler) TokenApprove(c *gin.Context) {
 	form := &types.TokenApproveRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -50,6 +59,15 @@ func (h *contractHandler) TokenApprove(c *gin.Context) {
 }
 
 // TokenTransfer 转账代币
+// @Summary Transfer tokens
+// @Description Transfer tokens to a specified address
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenTransferRequest true "transfer params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/token/transfer [post]
+// @Security BearerAuth
 func (h *contractHandler) TokenTransfer(c *gin.Context) {
 	form := &types.TokenTransferRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -85,6 +103,15 @@ func (h *contractHandler) TokenTransfer(c *gin.Context) {
 }
 
 // TokenBalanceOf 查询代币余额
+// @Summary Get token balance
+// @Description Query the token balance of a specified address
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenBalanceOfRequest true "balance params"
+// @Success 200 {object} types.TokenBalanceReply{}
+// @Router /api/v1/contract/token/balance-of [post]
+// @Security BearerAuth
 func (h *contractHandler) TokenBalanceOf(c *gin.Context) {
 	form := &types.TokenBalanceOfRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -115,6 +142,15 @@ func (h *contractHandler) TokenBalanceOf(c *gin.Context) {
 }
 
 // TokenAllowance 查询授权额度
+// @Summary Get token allowance
+// @Description Query the allowance of a spender for a given owner
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenAllowanceRequest true "allowance params"
+// @Success 200 {object} types.TokenAllowanceReply{}
+// @Router /api/v1/contract/token/allowance [post]
+// @Security BearerAuth
 func (h *contractHandler) TokenAllowance(c *gin.Context) {
 	form := &types.TokenAllowanceRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -147,6 +183,15 @@ func (h *contractHandler) TokenAllowance(c *gin.Context) {
 // ==================== 债务代币操作 ====================
 
 // DebtTokenMint 铸造债务代币（管理员）
+// @Summary Mint debt token
+// @Description Mint debt tokens to a specified account
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.DebtTokenMintRequest true "mint params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/debt-token/mint [post]
+// @Security BearerAuth
 func (h *contractHandler) DebtTokenMint(c *gin.Context) {
 	form := &types.DebtTokenMintRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -182,6 +227,15 @@ func (h *contractHandler) DebtTokenMint(c *gin.Context) {
 }
 
 // DebtTokenBurn 销毁债务代币（管理员）
+// @Summary Burn debt token
+// @Description Burn debt tokens from a specified account
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.DebtTokenBurnRequest true "burn params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/debt-token/burn [post]
+// @Security BearerAuth
 func (h *contractHandler) DebtTokenBurn(c *gin.Context) {
 	form := &types.DebtTokenBurnRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -217,6 +271,15 @@ func (h *contractHandler) DebtTokenBurn(c *gin.Context) {
 }
 
 // DebtTokenSetMinter 设置铸造者（管理员）
+// @Summary Set debt token minter
+// @Description Enable or disable a minter address for the debt token
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.DebtTokenSetMinterRequest true "set minter params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/debt-token/set-minter [post]
+// @Security BearerAuth
 func (h *contractHandler) DebtTokenSetMinter(c *gin.Context) {
 	form := &types.DebtTokenSetMinterRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -247,6 +310,15 @@ func (h *contractHandler) DebtTokenSetMinter(c *gin.Context) {
 }
 
 // DebtTokenBalanceOf 查询债务代币余额
+// @Summary Get debt token balance
+// @Description Query the debt token balance of a specified account
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenBalanceOfRequest true "balance params"
+// @Success 200 {object} types.TokenBalanceReply{}
+// @Router /api/v1/contract/debt-token/balance-of [post]
+// @Security BearerAuth
 func (h *contractHandler) DebtTokenBalanceOf(c *gin.Context) {
 	form := &types.TokenBalanceOfRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -277,6 +349,15 @@ func (h *contractHandler) DebtTokenBalanceOf(c *gin.Context) {
 }
 
 // DebtTokenTotalSupply 查询债务代币总供应量
+// @Summary Get debt token total supply
+// @Description Query the total supply of the debt token
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenReadRequest true "total supply params"
+// @Success 200 {object} types.TokenSupplyReply{}
+// @Router /api/v1/contract/debt-token/total-supply [post]
+// @Security BearerAuth
 func (h *contractHandler) DebtTokenTotalSupply(c *gin.Context) {
 	form := &types.TokenReadRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -309,6 +390,15 @@ func (h *contractHandler) DebtTokenTotalSupply(c *gin.Context) {
 // ==================== WETH 操作 ====================
 
 // WETHDeposit 存入ETH换取WETH
+// @Summary Deposit ETH for WETH
+// @Description Wrap ETH into WETH tokens
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.WETHDepositRequest true "deposit params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/weth/deposit [post]
+// @Security BearerAuth
 func (h *contractHandler) WETHDeposit(c *gin.Context) {
 	form := &types.WETHDepositRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -328,7 +418,6 @@ func (h *contractHandler) WETHDeposit(c *gin.Context) {
 	}
 	defer cleanup()
 
-	// Deposit 是 payable 方法，需要设置 Value
 	auth.Value = amount
 
 	weth, err := bindcode.NewWETH(common.HexToAddress(form.TokenAddress), client)
@@ -347,6 +436,15 @@ func (h *contractHandler) WETHDeposit(c *gin.Context) {
 }
 
 // WETHWithdraw 提取WETH换回ETH
+// @Summary Withdraw WETH for ETH
+// @Description Unwrap WETH back into ETH
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.WETHDepositRequest true "withdraw params"
+// @Success 200 {object} types.PoolWriteReply{}
+// @Router /api/v1/contract/weth/withdraw [post]
+// @Security BearerAuth
 func (h *contractHandler) WETHWithdraw(c *gin.Context) {
 	form := &types.WETHDepositRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {
@@ -382,6 +480,15 @@ func (h *contractHandler) WETHWithdraw(c *gin.Context) {
 }
 
 // WETHBalanceOf 查询WETH余额
+// @Summary Get WETH balance
+// @Description Query the WETH balance of a specified address
+// @Tags contract
+// @Accept json
+// @Produce json
+// @Param data body types.TokenBalanceOfRequest true "balance params"
+// @Success 200 {object} types.TokenBalanceReply{}
+// @Router /api/v1/contract/weth/balance-of [post]
+// @Security BearerAuth
 func (h *contractHandler) WETHBalanceOf(c *gin.Context) {
 	form := &types.TokenBalanceOfRequest{}
 	if err := c.ShouldBindJSON(form); err != nil {

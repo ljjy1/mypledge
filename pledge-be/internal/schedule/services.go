@@ -31,9 +31,7 @@ func getRedisCli() *redis.Client {
 // ==================== Redis 活跃池缓存（按链分组）====================
 
 const (
-	activePoolsCacheKeyPrefix   = "active_pools:"
 	activePoolsCacheTTL         = 24 * time.Hour
-	pledgePoolContractsCacheKey = "pledge_pool_contracts"
 	pledgePoolContractsCacheTTL = 24 * time.Hour
 )
 
@@ -67,7 +65,7 @@ func decodeActivePoolEntry(s string) (activePoolEntry, error) {
 // 缓存 key 为 active_pools:<chainID>，存储格式为 contractID:poolID 的列表，TTL 24 小时
 func getActivePoolEntries(ctx context.Context, chainID string) ([]activePoolEntry, error) {
 	redisCli := getRedisCli()
-	key := fmt.Sprintf("%s%s", activePoolsCacheKeyPrefix, chainID)
+	key := fmt.Sprintf(database.RedisKeyActivePools, chainID)
 
 	// 1. 尝试从 Redis 列表读取缓存
 	vals, err := redisCli.LRange(ctx, key, 0, -1).Result()
@@ -114,14 +112,14 @@ func getActivePoolEntries(ctx context.Context, chainID string) ([]activePoolEntr
 // removePoolEntryFromCache 从 Redis 缓存中移除指定的资金池条目
 func removePoolEntryFromCache(ctx context.Context, chainID string, entry activePoolEntry) {
 	redisCli := getRedisCli()
-	key := fmt.Sprintf("%s%s", activePoolsCacheKeyPrefix, chainID)
+	key := fmt.Sprintf(database.RedisKeyActivePools, chainID)
 	redisCli.LRem(ctx, key, 0, entry.encode())
 }
 
 // pushPoolEntryToCache 向 Redis 缓存中添加一条资金池条目（用于新建池子后主动入缓存）
 func pushPoolEntryToCache(ctx context.Context, chainID string, entry activePoolEntry) {
 	redisCli := getRedisCli()
-	key := fmt.Sprintf("%s%s", activePoolsCacheKeyPrefix, chainID)
+	key := fmt.Sprintf(database.RedisKeyActivePools, chainID)
 	redisCli.RPush(ctx, key, entry.encode())
 	redisCli.Expire(ctx, key, activePoolsCacheTTL)
 }
@@ -133,7 +131,7 @@ func getPledgePoolContracts(ctx context.Context) ([]model.Contract, error) {
 	redisCli := getRedisCli()
 
 	// 1. 尝试从 Redis 读取缓存
-	data, err := redisCli.Get(ctx, pledgePoolContractsCacheKey).Bytes()
+	data, err := redisCli.Get(ctx, database.RedisKeyPledgeContracts).Bytes()
 	if err == nil {
 		var contracts []model.Contract
 		if err := json.Unmarshal(data, &contracts); err == nil && len(contracts) > 0 {
@@ -153,7 +151,7 @@ func getPledgePoolContracts(ctx context.Context) ([]model.Contract, error) {
 	// 3. 写入缓存
 	if len(contracts) > 0 {
 		jsonBytes, _ := json.Marshal(contracts)
-		redisCli.Set(ctx, pledgePoolContractsCacheKey, jsonBytes, pledgePoolContractsCacheTTL)
+		redisCli.Set(ctx, database.RedisKeyPledgeContracts, jsonBytes, pledgePoolContractsCacheTTL)
 	}
 
 	return contracts, nil
@@ -618,14 +616,42 @@ func saveWithDedup(ctx context.Context, key string, value interface{}, saveFn fu
 	return nil
 }
 
-// EnsureRedisFlush 初始化时清空 Redis 缓存（由 ScheduleServer 调用）
-func EnsureRedisFlush() {
+// cleanScheduleCache 初始化时清理定时任务和事件监听相关的 Redis 缓存
+func cleanScheduleCache() {
 	redisCli := getRedisCli()
-	if err := redisCli.FlushDB(context.Background()).Err(); err != nil {
-		logger.Warn("[schedule] RedisFlushDB error", logger.Err(err))
-	} else {
-		logger.Info("[schedule] Redis cache flushed")
+	ctx := context.Background()
+	patterns := []string{
+		database.RedisKeyPattern(database.RedisKeyActivePools),
+		database.RedisKeyPledgeContracts,
+		database.RedisKeyPattern(database.RedisKeyBaseInfo),
+		database.RedisKeyPattern(database.RedisKeyDataInfo),
+		database.RedisKeyPattern(database.RedisKeyEvents),
 	}
+
+	var total int
+	for _, pattern := range patterns {
+		var cursor uint64
+		for {
+			keys, nextCursor, err := redisCli.Scan(ctx, cursor, pattern, 100).Result()
+			if err != nil {
+				logger.Warn("[schedule] scan keys error", logger.String("pattern", pattern), logger.Err(err))
+				break
+			}
+			if len(keys) > 0 {
+				if err := redisCli.Del(ctx, keys...).Err(); err != nil {
+					logger.Warn("[schedule] del keys error", logger.String("pattern", pattern), logger.Err(err))
+				} else {
+					total += len(keys)
+				}
+			}
+			cursor = nextCursor
+			if cursor == 0 {
+				break
+			}
+		}
+	}
+
+	logger.Info("[schedule] schedule cache cleaned", logger.Int("keyCount", total))
 }
 
 // ==================== 3. finishService — 到期完成检测与执行 ====================

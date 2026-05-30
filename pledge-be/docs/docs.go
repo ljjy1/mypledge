@@ -16,45 +16,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/contract": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new contract entity using the provided data in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contract"
-                ],
-                "summary": "Create a new contract",
-                "parameters": [
-                    {
-                        "description": "contract information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.CreateContractRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.CreateContractReply"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/contract/create-pool": {
             "post": {
                 "security": [
@@ -89,6 +50,201 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.CreatePoolReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/debt-token/balance-of": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the debt token balance of a specified account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get debt token balance",
+                "parameters": [
+                    {
+                        "description": "balance params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceOfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/debt-token/burn": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Burn debt tokens from a specified account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Burn debt token",
+                "parameters": [
+                    {
+                        "description": "burn params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.DebtTokenBurnRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/debt-token/mint": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mint debt tokens to a specified account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Mint debt token",
+                "parameters": [
+                    {
+                        "description": "mint params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.DebtTokenMintRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/debt-token/set-minter": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Enable or disable a minter address for the debt token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set debt token minter",
+                "parameters": [
+                    {
+                        "description": "set minter params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.DebtTokenSetMinterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/debt-token/total-supply": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the total supply of the debt token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get debt token total supply",
+                "parameters": [
+                    {
+                        "description": "total supply params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenSupplyReply"
                         }
                     }
                 }
@@ -133,6 +289,123 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/contract/factory/create-pair": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new token trading pair on the UniswapV2 factory contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Create a token pair on UniswapV2 factory",
+                "parameters": [
+                    {
+                        "description": "create pair params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.FactoryCreatePairRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.FactoryCreatePairReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/factory/get-pair": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the trading pair address on UniswapV2 factory",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get token pair address",
+                "parameters": [
+                    {
+                        "description": "get pair params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.FactoryGetPairRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.FactoryPairReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/factory/set-fee-to": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Set the fee address for the UniswapV2 factory contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set factory fee address",
+                "parameters": [
+                    {
+                        "description": "set fee to params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.FactorySetFeeToRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/contract/list": {
             "post": {
                 "security": [
@@ -167,6 +440,1644 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.ListContractsReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/oracle/get-price": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the current price of an asset from the price oracle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get asset price from oracle",
+                "parameters": [
+                    {
+                        "description": "get price params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.OracleGetPriceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.OraclePriceReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/oracle/set-aggregator": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the price aggregator for an asset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set oracle aggregator",
+                "parameters": [
+                    {
+                        "description": "set aggregator params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.OracleSetAggregatorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/oracle/set-price": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the price of an asset in the price oracle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set asset price in oracle",
+                "parameters": [
+                    {
+                        "description": "set price params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.OracleSetPriceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/oracle/set-prices": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Batch set prices for multiple assets - currently not fully implemented",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Batch set asset prices (not yet implemented)",
+                "parameters": [
+                    {
+                        "description": "set prices params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.OracleWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/oracle/transfer-ownership": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin transfers ownership of the oracle contract to a new address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Transfer oracle ownership",
+                "parameters": [
+                    {
+                        "description": "transfer ownership params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.OracleWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/borrow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "User borrows specified amount of assets from a pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Borrow assets from a pool",
+                "parameters": [
+                    {
+                        "description": "borrow params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolBorrowRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/check-can-finish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check on-chain whether a pool is ready to finish",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Check if pool can finish",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolCheckReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/check-can-liquidate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check on-chain whether a pool meets liquidation conditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Check if pool can liquidate",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolCheckReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/check-can-settle": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check on-chain whether a pool is ready for settlement",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Check if pool can settle",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolCheckReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/claim-borrow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "User claims previously borrowed assets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Claim borrowed assets",
+                "parameters": [
+                    {
+                        "description": "claim borrow params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/claim-lend-debt": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Lender claims lend debt token as proof of lending",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Claim lend debt token",
+                "parameters": [
+                    {
+                        "description": "claim lend debt params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/config": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query pool global config including oracle, fee, router, owner etc.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get pool config",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolConfigReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/data": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query settlement and liquidation amounts of a pool on chain",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get pool settlement \u0026 liquidation data",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolDataReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/destroy-borrow-debt": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Burn borrow debt token and redeem underlying assets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Destroy borrow debt token",
+                "parameters": [
+                    {
+                        "description": "destroy borrow debt params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolDestroyDebtRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/destroy-lend-debt": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Burn lend debt token and redeem underlying assets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Destroy lend debt token",
+                "parameters": [
+                    {
+                        "description": "destroy lend debt params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolDestroyDebtRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/emergency-withdraw-borrow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Emergency withdraw borrowed assets in case of emergency",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Emergency withdraw borrow",
+                "parameters": [
+                    {
+                        "description": "emergency withdraw borrow params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/emergency-withdraw-lend": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Emergency withdraw lent assets in case of emergency",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Emergency withdraw lend",
+                "parameters": [
+                    {
+                        "description": "emergency withdraw lend params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/finish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Finish a pool and distribute assets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Finish a pool",
+                "parameters": [
+                    {
+                        "description": "finish params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/info": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query detailed information of a pool on chain",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get pool info",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolInfoReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/lend": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "User lends specified amount of assets to a pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Lend assets to a pool",
+                "parameters": [
+                    {
+                        "description": "lend params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolAmountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/liquidate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Trigger liquidation of a pool that meets liquidation conditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Liquidate a pool",
+                "parameters": [
+                    {
+                        "description": "liquidate params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/refund-borrow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "User returns borrowed assets to the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Refund borrowed assets",
+                "parameters": [
+                    {
+                        "description": "refund borrow params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/refund-lend": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Lender retrieves lent assets from the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Refund lent assets",
+                "parameters": [
+                    {
+                        "description": "refund lend params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-fee": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets lending and borrowing fee rates for the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set pool fee rates",
+                "parameters": [
+                    {
+                        "description": "set fee params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolSetFeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-fee-address": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the fee receiving address for the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set fee address",
+                "parameters": [
+                    {
+                        "description": "set fee address params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolSetAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-global-paused": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin pauses or unpauses all pool operations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Toggle global paused",
+                "parameters": [
+                    {
+                        "description": "global paused params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-min-amount": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the minimum transaction amount for the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set minimum amount",
+                "parameters": [
+                    {
+                        "description": "set min amount params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolSetMinAmountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-oracle": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the price oracle contract address for the pool",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set oracle address",
+                "parameters": [
+                    {
+                        "description": "set oracle params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolSetAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/set-swap-router": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin sets the DEX swap router contract address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Set swap router address",
+                "parameters": [
+                    {
+                        "description": "set swap router params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolSetAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/settle": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Perform pool settlement on chain",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Settle a pool",
+                "parameters": [
+                    {
+                        "description": "settle params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/state": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the current state of a pool on chain",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get pool state",
+                "parameters": [
+                    {
+                        "description": "pool read params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolStateReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/pool/transfer-ownership": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin transfers ownership of the pool contract to a new address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Transfer pool ownership",
+                "parameters": [
+                    {
+                        "description": "transfer ownership params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolTransferOwnershipRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/router/add-liquidity": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add liquidity to a UniswapV2 trading pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Add liquidity to a token pair",
+                "parameters": [
+                    {
+                        "description": "add liquidity params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.RouterAddLiquidityRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/router/get-amounts-out": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query expected output amounts for a given input along a swap path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get swap output amounts",
+                "parameters": [
+                    {
+                        "description": "get amounts params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.RouterGetAmountsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.RouterAmountsReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/router/swap-exact-tokens-for-tokens": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Swap an exact amount of input tokens for a minimum amount of output tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Swap exact tokens for tokens",
+                "parameters": [
+                    {
+                        "description": "swap params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.RouterSwapRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/token/allowance": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the allowance of a spender for a given owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get token allowance",
+                "parameters": [
+                    {
+                        "description": "allowance params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenAllowanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenAllowanceReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/token/approve": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Approve a spender address to spend a specified amount of tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Approve token spending",
+                "parameters": [
+                    {
+                        "description": "approve params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenApproveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/token/balance-of": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the token balance of a specified address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get token balance",
+                "parameters": [
+                    {
+                        "description": "balance params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceOfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/token/transfer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Transfer tokens to a specified address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Transfer tokens",
+                "parameters": [
+                    {
+                        "description": "transfer params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenTransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/weth/balance-of": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Query the WETH balance of a specified address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Get WETH balance",
+                "parameters": [
+                    {
+                        "description": "balance params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceOfRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.TokenBalanceReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/weth/deposit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Wrap ETH into WETH tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Deposit ETH for WETH",
+                "parameters": [
+                    {
+                        "description": "deposit params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.WETHDepositRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contract/weth/withdraw": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Unwrap WETH back into ETH",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Withdraw WETH for ETH",
+                "parameters": [
+                    {
+                        "description": "withdraw params",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.WETHDepositRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.PoolWriteReply"
                         }
                     }
                 }
@@ -207,85 +2118,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates the specified contract by given id in the path, support partial update.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contract"
-                ],
-                "summary": "Update a contract by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "contract information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdateContractByIDRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdateContractByIDReply"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a existing contract identified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contract"
-                ],
-                "summary": "Delete a contract by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.DeleteContractByIDReply"
-                        }
-                    }
-                }
             }
         },
         "/api/v1/login": {
@@ -322,394 +2154,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/poolbases": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new poolbases entity using the provided data in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "poolbases"
-                ],
-                "summary": "Create a new poolbases",
-                "parameters": [
-                    {
-                        "description": "poolbases information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.CreatePoolbasesRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.CreatePoolbasesReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/poolbases/list": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns a paginated list of poolbases based on query filters, including page number and size.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "poolbases"
-                ],
-                "summary": "Get a paginated list of poolbasess by custom conditions",
-                "parameters": [
-                    {
-                        "description": "query parameters",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Params"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ListPoolbasessReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/poolbases/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Gets detailed information of a poolbases specified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "poolbases"
-                ],
-                "summary": "Get a poolbases by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.GetPoolbasesByIDReply"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates the specified poolbases by given id in the path, support partial update.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "poolbases"
-                ],
-                "summary": "Update a poolbases by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "poolbases information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdatePoolbasesByIDRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdatePoolbasesByIDReply"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a existing poolbases identified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "poolbases"
-                ],
-                "summary": "Delete a poolbases by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.DeletePoolbasesByIDReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/pooldata": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new pooldata entity using the provided data in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pooldata"
-                ],
-                "summary": "Create a new pooldata",
-                "parameters": [
-                    {
-                        "description": "pooldata information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.CreatePooldataRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.CreatePooldataReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/pooldata/list": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns a paginated list of pooldata based on query filters, including page number and size.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pooldata"
-                ],
-                "summary": "Get a paginated list of pooldatas by custom conditions",
-                "parameters": [
-                    {
-                        "description": "query parameters",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Params"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ListPooldatasReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/pooldata/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Gets detailed information of a pooldata specified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pooldata"
-                ],
-                "summary": "Get a pooldata by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.GetPooldataByIDReply"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates the specified pooldata by given id in the path, support partial update.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pooldata"
-                ],
-                "summary": "Update a pooldata by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "pooldata information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdatePooldataByIDRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdatePooldataByIDReply"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a existing pooldata identified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pooldata"
-                ],
-                "summary": "Delete a pooldata by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.DeletePooldataByIDReply"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/register": {
             "post": {
                 "description": "Registers a new user with validation rules.",
@@ -739,200 +2183,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.RegisterReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/tokenInfo": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a new tokenInfo entity using the provided data in the request body.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tokenInfo"
-                ],
-                "summary": "Create a new tokenInfo",
-                "parameters": [
-                    {
-                        "description": "tokenInfo information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.CreateTokenInfoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.CreateTokenInfoReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/tokenInfo/list": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns a paginated list of tokenInfo based on query filters, including page number and size.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tokenInfo"
-                ],
-                "summary": "Get a paginated list of tokenInfos by custom conditions",
-                "parameters": [
-                    {
-                        "description": "query parameters",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.Params"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ListTokenInfosReply"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/tokenInfo/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Gets detailed information of a tokenInfo specified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tokenInfo"
-                ],
-                "summary": "Get a tokenInfo by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.GetTokenInfoByIDReply"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates the specified tokenInfo by given id in the path, support partial update.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tokenInfo"
-                ],
-                "summary": "Update a tokenInfo by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "tokenInfo information",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdateTokenInfoByIDRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.UpdateTokenInfoByIDReply"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a existing tokenInfo identified by the given id in the path.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tokenInfo"
-                ],
-                "summary": "Delete a tokenInfo by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.DeleteTokenInfoByIDReply"
                         }
                     }
                 }
@@ -1177,61 +2427,9 @@ const docTemplate = `{
                     "description": "convert to uint64 id",
                     "type": "integer"
                 },
-                "nodeURL": {
-                    "description": "主键ID",
-                    "type": "string"
-                },
-                "publisherAddress": {
-                    "description": "合约发布者地址",
-                    "type": "string"
-                },
-                "txHash": {
-                    "description": "部署交易哈希",
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "description": "更新时间",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreateContractReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "description": "id",
-                            "type": "integer"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreateContractRequest": {
-            "type": "object",
-            "properties": {
-                "chainID": {
-                    "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
-                    "type": "string"
-                },
-                "contractAddress": {
-                    "description": "合约地址",
-                    "type": "string"
-                },
-                "contractName": {
-                    "description": "合约名称",
-                    "type": "string"
+                "isToken": {
+                    "description": "是否为代币合约",
+                    "type": "boolean"
                 },
                 "nodeURL": {
                     "description": "合约发布网站地址，如127.0.0.1:8454",
@@ -1241,8 +2439,20 @@ const docTemplate = `{
                     "description": "合约发布者地址",
                     "type": "string"
                 },
+                "tokenDecimals": {
+                    "description": "代币精度(小数点位数)",
+                    "type": "integer"
+                },
+                "tokenSymbol": {
+                    "description": "代币符号",
+                    "type": "string"
+                },
                 "txHash": {
                     "description": "部署交易哈希",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
                     "type": "string"
                 }
             }
@@ -1338,222 +2548,6 @@ const docTemplate = `{
                 }
             }
         },
-        "types.CreatePoolbasesReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "description": "id",
-                            "type": "integer"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreatePoolbasesRequest": {
-            "type": "object",
-            "properties": {
-                "autoLiquidateThreshold": {
-                    "description": "自动清算阈值(精度值)",
-                    "type": "string"
-                },
-                "borrowDebtToken": {
-                    "description": "借入(抵押)侧池子代币/合约地址(质押资产)",
-                    "type": "string"
-                },
-                "borrowSupply": {
-                    "description": "当前已借入(抵押)总量",
-                    "type": "string"
-                },
-                "borrowToken": {
-                    "description": "借入(抵押)资产合约地址(用户抵押的币)",
-                    "type": "string"
-                },
-                "borrowTokenInfo": {
-                    "description": "借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等",
-                    "type": "string"
-                },
-                "borrowTokenSymbol": {
-                    "description": "借入(抵押)代币符号，如 BTC",
-                    "type": "string"
-                },
-                "chainID": {
-                    "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
-                    "type": "string"
-                },
-                "endTime": {
-                    "description": "池子结束时间戳",
-                    "type": "string"
-                },
-                "interestRate": {
-                    "description": "利率(精度值，如 10000000 表示 1%)",
-                    "type": "string"
-                },
-                "lendDebtToken": {
-                    "description": "出借侧池子代币/合约地址(出借凭证)",
-                    "type": "string"
-                },
-                "lendSupply": {
-                    "description": "当前已出借总量",
-                    "type": "string"
-                },
-                "lendToken": {
-                    "description": "出借资产合约地址(用户借出的币)",
-                    "type": "string"
-                },
-                "lendTokenInfo": {
-                    "description": "出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等",
-                    "type": "string"
-                },
-                "lendTokenSymbol": {
-                    "description": "出借代币符号，如 BUSD",
-                    "type": "string"
-                },
-                "maxSupply": {
-                    "description": "池子最大可借/可存额度(最小单位)",
-                    "type": "string"
-                },
-                "mortgageRate": {
-                    "description": "抵押率(精度值，如 10000000=100%)",
-                    "type": "string"
-                },
-                "poolID": {
-                    "description": "业务池子 ID，与链上 pool 对应",
-                    "type": "integer"
-                },
-                "settleTime": {
-                    "description": "结算开始时间戳",
-                    "type": "string"
-                },
-                "state": {
-                    "description": "池子状态: 0未开启 1进行中 2已结算 3清算中 4未开启等",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreatePooldataReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "description": "id",
-                            "type": "integer"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreatePooldataRequest": {
-            "type": "object",
-            "properties": {
-                "chainID": {
-                    "description": "链 ID，与 poolbases 一致",
-                    "type": "string"
-                },
-                "finishAmountBorrow": {
-                    "description": "已完成/归还的借入侧金额",
-                    "type": "string"
-                },
-                "finishAmountLend": {
-                    "description": "已完成/归还的借出侧金额",
-                    "type": "string"
-                },
-                "liquidationAmounBorrow": {
-                    "description": "清算产生的借入侧金额",
-                    "type": "string"
-                },
-                "liquidationAmounLend": {
-                    "description": "清算产生的借出侧金额",
-                    "type": "string"
-                },
-                "poolID": {
-                    "description": "池子 ID，与 poolbases.pool_id 对应",
-                    "type": "string"
-                },
-                "settleAmountBorrow": {
-                    "description": "结算时借入侧(抵押)金额",
-                    "type": "string"
-                },
-                "settleAmountLend": {
-                    "description": "结算时借出侧(贷方)金额",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreateTokenInfoReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "id": {
-                            "description": "id",
-                            "type": "integer"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.CreateTokenInfoRequest": {
-            "type": "object",
-            "properties": {
-                "chainID": {
-                    "description": "链 ID: 56=BSC 97=测试网",
-                    "type": "string"
-                },
-                "decimals": {
-                    "description": "代币精度(小数位数)",
-                    "type": "integer"
-                },
-                "logo": {
-                    "description": "代币 logo URL",
-                    "type": "string"
-                },
-                "price": {
-                    "description": "价格(精度值，用于估值与清算)",
-                    "type": "string"
-                },
-                "symbol": {
-                    "description": "代币符号，如 BUSD/BTC",
-                    "type": "string"
-                },
-                "token": {
-                    "description": "代币合约地址",
-                    "type": "string"
-                }
-            }
-        },
         "types.CreateUserReply": {
             "type": "object",
             "properties": {
@@ -1594,70 +2588,89 @@ const docTemplate = `{
                 }
             }
         },
-        "types.DeleteContractByIDReply": {
+        "types.DebtTokenBurnRequest": {
             "type": "object",
+            "required": [
+                "account",
+                "amount",
+                "privateKey",
+                "rpcUrl",
+                "tokenAddress"
+            ],
             "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
+                "account": {
+                    "description": "销毁地址",
+                    "type": "string"
                 },
-                "data": {
-                    "description": "return data",
-                    "type": "object"
+                "amount": {
+                    "description": "销毁数量",
+                    "type": "string"
                 },
-                "msg": {
-                    "description": "return information description",
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenAddress": {
                     "type": "string"
                 }
             }
         },
-        "types.DeletePoolbasesByIDReply": {
+        "types.DebtTokenMintRequest": {
             "type": "object",
+            "required": [
+                "account",
+                "amount",
+                "privateKey",
+                "rpcUrl",
+                "tokenAddress"
+            ],
             "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
+                "account": {
+                    "description": "接收地址",
+                    "type": "string"
                 },
-                "data": {
-                    "description": "return data",
-                    "type": "object"
+                "amount": {
+                    "description": "铸造数量",
+                    "type": "string"
                 },
-                "msg": {
-                    "description": "return information description",
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenAddress": {
                     "type": "string"
                 }
             }
         },
-        "types.DeletePooldataByIDReply": {
+        "types.DebtTokenSetMinterRequest": {
             "type": "object",
+            "required": [
+                "minter",
+                "privateKey",
+                "rpcUrl",
+                "status",
+                "tokenAddress"
+            ],
             "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object"
-                },
-                "msg": {
-                    "description": "return information description",
+                "minter": {
+                    "description": "铸造者地址",
                     "type": "string"
-                }
-            }
-        },
-        "types.DeleteTokenInfoByIDReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
                 },
-                "data": {
-                    "description": "return data",
-                    "type": "object"
+                "privateKey": {
+                    "type": "string"
                 },
-                "msg": {
-                    "description": "return information description",
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "tokenAddress": {
                     "type": "string"
                 }
             }
@@ -1798,6 +2811,123 @@ const docTemplate = `{
                 }
             }
         },
+        "types.FactoryCreatePairReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "pairAddress": {
+                            "type": "string"
+                        },
+                        "txHash": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.FactoryCreatePairRequest": {
+            "type": "object",
+            "required": [
+                "factoryAddress",
+                "privateKey",
+                "rpcUrl",
+                "tokenA",
+                "tokenB"
+            ],
+            "properties": {
+                "factoryAddress": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenA": {
+                    "description": "代币A地址",
+                    "type": "string"
+                },
+                "tokenB": {
+                    "description": "代币B地址",
+                    "type": "string"
+                }
+            }
+        },
+        "types.FactoryGetPairRequest": {
+            "type": "object",
+            "required": [
+                "factoryAddress",
+                "rpcUrl",
+                "tokenA",
+                "tokenB"
+            ],
+            "properties": {
+                "factoryAddress": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenA": {
+                    "type": "string"
+                },
+                "tokenB": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.FactoryPairReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "pairAddress": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.FactorySetFeeToRequest": {
+            "type": "object",
+            "required": [
+                "factoryAddress",
+                "feeTo",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "factoryAddress": {
+                    "type": "string"
+                },
+                "feeTo": {
+                    "description": "新手续费地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                }
+            }
+        },
         "types.GetContractByIDReply": {
             "type": "object",
             "properties": {
@@ -1811,72 +2941,6 @@ const docTemplate = `{
                     "properties": {
                         "contract": {
                             "$ref": "#/definitions/types.ContractObjDetail"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetPoolbasesByIDReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "poolbases": {
-                            "$ref": "#/definitions/types.PoolbasesObjDetail"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetPooldataByIDReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "pooldata": {
-                            "$ref": "#/definitions/types.PooldataObjDetail"
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.GetTokenInfoByIDReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "tokenInfo": {
-                            "$ref": "#/definitions/types.TokenInfoObjDetail"
                         }
                     }
                 },
@@ -1923,81 +2987,6 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/types.ContractObjDetail"
-                            }
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.ListPoolbasessReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "poolbasess": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/types.PoolbasesObjDetail"
-                            }
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.ListPooldatasReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "pooldatas": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/types.PooldataObjDetail"
-                            }
-                        }
-                    }
-                },
-                "msg": {
-                    "description": "return information description",
-                    "type": "string"
-                }
-            }
-        },
-        "types.ListTokenInfosReply": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "description": "return code",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "return data",
-                    "type": "object",
-                    "properties": {
-                        "tokenInfos": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/types.TokenInfoObjDetail"
                             }
                         }
                     }
@@ -2073,6 +3062,132 @@ const docTemplate = `{
                 }
             }
         },
+        "types.OracleGetPriceRequest": {
+            "type": "object",
+            "required": [
+                "assetAddress",
+                "oracleAddress",
+                "rpcUrl"
+            ],
+            "properties": {
+                "assetAddress": {
+                    "description": "资产合约地址",
+                    "type": "string"
+                },
+                "oracleAddress": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.OraclePriceReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "price": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.OracleSetAggregatorRequest": {
+            "type": "object",
+            "required": [
+                "aggregator",
+                "assetAddress",
+                "oracleAddress",
+                "privateKey",
+                "rpcUrl",
+                "tokenDecimals"
+            ],
+            "properties": {
+                "aggregator": {
+                    "description": "聚合器地址",
+                    "type": "string"
+                },
+                "assetAddress": {
+                    "description": "资产地址",
+                    "type": "string"
+                },
+                "oracleAddress": {
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenDecimals": {
+                    "description": "代币精度",
+                    "type": "integer"
+                }
+            }
+        },
+        "types.OracleSetPriceRequest": {
+            "type": "object",
+            "required": [
+                "assetAddress",
+                "oracleAddress",
+                "price",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "assetAddress": {
+                    "description": "资产地址",
+                    "type": "string"
+                },
+                "oracleAddress": {
+                    "type": "string"
+                },
+                "price": {
+                    "description": "价格",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.OracleWriteRequest": {
+            "type": "object",
+            "required": [
+                "oracleAddress",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "newAddress": {
+                    "description": "新地址(TransferOwnership用)",
+                    "type": "string"
+                },
+                "oracleAddress": {
+                    "description": "Oracle合约地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                }
+            }
+        },
         "types.Params": {
             "type": "object",
             "properties": {
@@ -2097,144 +3212,462 @@ const docTemplate = `{
                 }
             }
         },
-        "types.PoolbasesObjDetail": {
+        "types.PoolAmountRequest": {
             "type": "object",
+            "required": [
+                "amount",
+                "poolContractAddress",
+                "poolID",
+                "privateKey",
+                "rpcUrl"
+            ],
             "properties": {
-                "autoLiquidateThreshold": {
-                    "description": "自动清算阈值(精度值)",
+                "amount": {
+                    "description": "金额(最小单位)",
                     "type": "string"
                 },
-                "borrowDebtToken": {
-                    "description": "借入(抵押)侧池子代币/合约地址(质押资产)",
-                    "type": "string"
-                },
-                "borrowSupply": {
-                    "description": "当前已借入(抵押)总量",
-                    "type": "string"
-                },
-                "borrowToken": {
-                    "description": "借入(抵押)资产合约地址(用户抵押的币)",
-                    "type": "string"
-                },
-                "borrowTokenInfo": {
-                    "description": "借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等",
-                    "type": "string"
-                },
-                "borrowTokenSymbol": {
-                    "description": "借入(抵押)代币符号，如 BTC",
-                    "type": "string"
-                },
-                "chainID": {
-                    "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
-                    "type": "string"
-                },
-                "createdAt": {
-                    "description": "创建时间",
-                    "type": "string"
-                },
-                "endTime": {
-                    "description": "池子结束时间戳",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "convert to uint64 id",
-                    "type": "integer"
-                },
-                "interestRate": {
-                    "description": "利率(精度值，如 10000000 表示 1%)",
-                    "type": "string"
-                },
-                "lendDebtToken": {
-                    "description": "出借侧池子代币/合约地址(出借凭证)",
-                    "type": "string"
-                },
-                "lendSupply": {
-                    "description": "当前已出借总量",
-                    "type": "string"
-                },
-                "lendToken": {
-                    "description": "出借资产合约地址(用户借出的币)",
-                    "type": "string"
-                },
-                "lendTokenInfo": {
-                    "description": "出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等",
-                    "type": "string"
-                },
-                "lendTokenSymbol": {
-                    "description": "出借代币符号，如 BUSD",
-                    "type": "string"
-                },
-                "maxSupply": {
-                    "description": "池子最大可借/可存额度(最小单位)",
-                    "type": "string"
-                },
-                "mortgageRate": {
-                    "description": "抵押率(精度值，如 10000000=100%)",
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
                     "type": "string"
                 },
                 "poolID": {
-                    "description": "主键ID",
-                    "type": "integer"
-                },
-                "settleTime": {
-                    "description": "结算开始时间戳",
+                    "description": "池子ID",
                     "type": "string"
                 },
-                "state": {
-                    "description": "池子状态: 0未开启 1进行中 2已结算 3清算中 4未开启等",
+                "privateKey": {
+                    "description": "私钥",
                     "type": "string"
                 },
-                "updatedAt": {
-                    "description": "更新时间",
+                "rpcUrl": {
+                    "description": "RPC URL",
                     "type": "string"
                 }
             }
         },
-        "types.PooldataObjDetail": {
+        "types.PoolBorrowRequest": {
             "type": "object",
+            "required": [
+                "borrowTokenAmount",
+                "poolContractAddress",
+                "poolID",
+                "privateKey",
+                "rpcUrl"
+            ],
             "properties": {
-                "chainID": {
-                    "description": "主键ID",
+                "borrowTokenAmount": {
+                    "description": "借入代币数量",
                     "type": "string"
                 },
-                "createdAt": {
-                    "description": "创建时间",
-                    "type": "string"
-                },
-                "finishAmountBorrow": {
-                    "description": "已完成/归还的借入侧金额",
-                    "type": "string"
-                },
-                "finishAmountLend": {
-                    "description": "已完成/归还的借出侧金额",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "convert to uint64 id",
-                    "type": "integer"
-                },
-                "liquidationAmounBorrow": {
-                    "description": "清算产生的借入侧金额",
-                    "type": "string"
-                },
-                "liquidationAmounLend": {
-                    "description": "清算产生的借出侧金额",
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
                     "type": "string"
                 },
                 "poolID": {
-                    "description": "池子 ID，与 poolbases.pool_id 对应",
+                    "description": "池子ID",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolCheckReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "result": {
+                            "description": "检查结果",
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolConfigReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "borrowFee": {
+                            "type": "string"
+                        },
+                        "feeAddress": {
+                            "type": "string"
+                        },
+                        "lendFee": {
+                            "type": "string"
+                        },
+                        "minAmount": {
+                            "type": "string"
+                        },
+                        "oracle": {
+                            "type": "string"
+                        },
+                        "owner": {
+                            "type": "string"
+                        },
+                        "swapRouter": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolDataInfo": {
+            "type": "object",
+            "properties": {
+                "finishAmountBorrow": {
+                    "type": "string"
+                },
+                "finishAmountLend": {
+                    "type": "string"
+                },
+                "liquidationAmountBorrow": {
+                    "type": "string"
+                },
+                "liquidationAmountLend": {
                     "type": "string"
                 },
                 "settleAmountBorrow": {
-                    "description": "结算时借入侧(抵押)金额",
                     "type": "string"
                 },
                 "settleAmountLend": {
-                    "description": "结算时借出侧(贷方)金额",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolDataReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "data": {
+                            "$ref": "#/definitions/types.PoolDataInfo"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolDestroyDebtRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "poolContractAddress",
+                "poolID",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "销毁数量",
                     "type": "string"
                 },
-                "updatedAt": {
-                    "description": "更新时间",
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "poolID": {
+                    "description": "池子ID",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolInfoData": {
+            "type": "object",
+            "properties": {
+                "autoLiquidateThreshold": {
+                    "type": "string"
+                },
+                "borrowDebtToken": {
+                    "type": "string"
+                },
+                "borrowSupply": {
+                    "type": "string"
+                },
+                "borrowToken": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "interestRate": {
+                    "type": "string"
+                },
+                "lendDebtToken": {
+                    "type": "string"
+                },
+                "lendSupply": {
+                    "type": "string"
+                },
+                "lendToken": {
+                    "type": "string"
+                },
+                "maxSupply": {
+                    "type": "string"
+                },
+                "mortgageRate": {
+                    "type": "string"
+                },
+                "settleTime": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.PoolInfoReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "info": {
+                            "$ref": "#/definitions/types.PoolInfoData"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolReadRequest": {
+            "type": "object",
+            "required": [
+                "poolContractAddress",
+                "poolID",
+                "rpcUrl"
+            ],
+            "properties": {
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "poolID": {
+                    "description": "池子ID",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolSetAddressRequest": {
+            "type": "object",
+            "required": [
+                "newAddress",
+                "poolContractAddress",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "newAddress": {
+                    "description": "新地址",
+                    "type": "string"
+                },
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolSetFeeRequest": {
+            "type": "object",
+            "required": [
+                "borrowFee",
+                "lendFee",
+                "poolContractAddress",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "borrowFee": {
+                    "description": "借入费率",
+                    "type": "string"
+                },
+                "lendFee": {
+                    "description": "出借费率",
+                    "type": "string"
+                },
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolSetMinAmountRequest": {
+            "type": "object",
+            "required": [
+                "minAmount",
+                "poolContractAddress",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "minAmount": {
+                    "description": "最小金额",
+                    "type": "string"
+                },
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolStateReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "state": {
+                            "description": "池子状态",
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolTransferOwnershipRequest": {
+            "type": "object",
+            "required": [
+                "newOwner",
+                "poolContractAddress",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "newOwner": {
+                    "description": "新所有者地址",
+                    "type": "string"
+                },
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolWriteReply": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "object",
+                    "properties": {
+                        "txHash": {
+                            "description": "交易哈希",
+                            "type": "string"
+                        }
+                    }
+                },
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PoolWriteRequest": {
+            "type": "object",
+            "required": [
+                "poolContractAddress",
+                "poolID",
+                "privateKey",
+                "rpcUrl"
+            ],
+            "properties": {
+                "poolContractAddress": {
+                    "description": "PledgePool合约地址",
+                    "type": "string"
+                },
+                "poolID": {
+                    "description": "池子ID",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "description": "私钥",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "description": "RPC URL",
                     "type": "string"
                 }
             }
@@ -2284,303 +3717,318 @@ const docTemplate = `{
                 }
             }
         },
-        "types.TokenInfoObjDetail": {
+        "types.RouterAddLiquidityRequest": {
             "type": "object",
+            "required": [
+                "amountADesired",
+                "amountAMin",
+                "amountBDesired",
+                "amountBMin",
+                "deadline",
+                "privateKey",
+                "routerAddress",
+                "rpcUrl",
+                "to",
+                "tokenA",
+                "tokenB"
+            ],
             "properties": {
-                "chainID": {
-                    "description": "链 ID: 56=BSC 97=测试网",
+                "amountADesired": {
                     "type": "string"
                 },
-                "createdAt": {
-                    "description": "创建时间",
+                "amountAMin": {
                     "type": "string"
                 },
-                "decimals": {
-                    "description": "代币精度(小数位数)",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "convert to uint64 id",
-                    "type": "integer"
-                },
-                "logo": {
-                    "description": "代币 logo URL",
+                "amountBDesired": {
                     "type": "string"
                 },
-                "price": {
-                    "description": "价格(精度值，用于估值与清算)",
+                "amountBMin": {
                     "type": "string"
                 },
-                "symbol": {
-                    "description": "主键ID",
+                "deadline": {
                     "type": "string"
                 },
-                "token": {
-                    "description": "代币合约地址",
+                "privateKey": {
                     "type": "string"
                 },
-                "updatedAt": {
-                    "description": "更新时间",
+                "routerAddress": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "tokenA": {
+                    "type": "string"
+                },
+                "tokenB": {
                     "type": "string"
                 }
             }
         },
-        "types.UpdateContractByIDReply": {
+        "types.RouterAmountsReply": {
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "return code",
                     "type": "integer"
                 },
                 "data": {
-                    "description": "return data",
-                    "type": "object"
+                    "type": "object",
+                    "properties": {
+                        "amounts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
                 },
                 "msg": {
-                    "description": "return information description",
                     "type": "string"
                 }
             }
         },
-        "types.UpdateContractByIDRequest": {
+        "types.RouterGetAmountsRequest": {
             "type": "object",
+            "required": [
+                "amountIn",
+                "path",
+                "routerAddress",
+                "rpcUrl"
+            ],
             "properties": {
-                "chainID": {
-                    "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
+                "amountIn": {
                     "type": "string"
                 },
-                "contractAddress": {
-                    "description": "合约地址",
+                "path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "routerAddress": {
                     "type": "string"
                 },
-                "contractName": {
-                    "description": "合约名称",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "uint64 id",
-                    "type": "integer"
-                },
-                "nodeURL": {
-                    "description": "主键ID",
-                    "type": "string"
-                },
-                "publisherAddress": {
-                    "description": "合约发布者地址",
-                    "type": "string"
-                },
-                "txHash": {
-                    "description": "部署交易哈希",
+                "rpcUrl": {
                     "type": "string"
                 }
             }
         },
-        "types.UpdatePoolbasesByIDReply": {
+        "types.RouterSwapRequest": {
+            "type": "object",
+            "required": [
+                "amountIn",
+                "amountOutMin",
+                "deadline",
+                "path",
+                "privateKey",
+                "routerAddress",
+                "rpcUrl",
+                "to"
+            ],
+            "properties": {
+                "amountIn": {
+                    "type": "string"
+                },
+                "amountOutMin": {
+                    "type": "string"
+                },
+                "deadline": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "routerAddress": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.TokenAllowanceReply": {
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "return code",
                     "type": "integer"
                 },
                 "data": {
-                    "description": "return data",
-                    "type": "object"
+                    "type": "object",
+                    "properties": {
+                        "allowance": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "msg": {
-                    "description": "return information description",
                     "type": "string"
                 }
             }
         },
-        "types.UpdatePoolbasesByIDRequest": {
+        "types.TokenAllowanceRequest": {
             "type": "object",
+            "required": [
+                "owner",
+                "rpcUrl",
+                "spender",
+                "tokenAddress"
+            ],
             "properties": {
-                "autoLiquidateThreshold": {
-                    "description": "自动清算阈值(精度值)",
+                "owner": {
+                    "description": "所有者",
                     "type": "string"
                 },
-                "borrowDebtToken": {
-                    "description": "借入(抵押)侧池子代币/合约地址(质押资产)",
+                "rpcUrl": {
                     "type": "string"
                 },
-                "borrowSupply": {
-                    "description": "当前已借入(抵押)总量",
+                "spender": {
+                    "description": "被授权者",
                     "type": "string"
                 },
-                "borrowToken": {
-                    "description": "借入(抵押)资产合约地址(用户抵押的币)",
-                    "type": "string"
-                },
-                "borrowTokenInfo": {
-                    "description": "借入(抵押)代币信息: tokenName, tokenLogo, tokenPrice, borrowFee 等",
-                    "type": "string"
-                },
-                "borrowTokenSymbol": {
-                    "description": "借入(抵押)代币符号，如 BTC",
-                    "type": "string"
-                },
-                "chainID": {
-                    "description": "链 ID: 56=BSC 主网 97=BSC 测试网",
-                    "type": "string"
-                },
-                "endTime": {
-                    "description": "池子结束时间戳",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "uint64 id",
-                    "type": "integer"
-                },
-                "interestRate": {
-                    "description": "利率(精度值，如 10000000 表示 1%)",
-                    "type": "string"
-                },
-                "lendDebtToken": {
-                    "description": "出借侧池子代币/合约地址(出借凭证)",
-                    "type": "string"
-                },
-                "lendSupply": {
-                    "description": "当前已出借总量",
-                    "type": "string"
-                },
-                "lendToken": {
-                    "description": "出借资产合约地址(用户借出的币)",
-                    "type": "string"
-                },
-                "lendTokenInfo": {
-                    "description": "出借代币信息: tokenName, tokenLogo, tokenPrice, lendFee 等",
-                    "type": "string"
-                },
-                "lendTokenSymbol": {
-                    "description": "出借代币符号，如 BUSD",
-                    "type": "string"
-                },
-                "maxSupply": {
-                    "description": "池子最大可借/可存额度(最小单位)",
-                    "type": "string"
-                },
-                "mortgageRate": {
-                    "description": "抵押率(精度值，如 10000000=100%)",
-                    "type": "string"
-                },
-                "poolID": {
-                    "description": "主键ID",
-                    "type": "integer"
-                },
-                "settleTime": {
-                    "description": "结算开始时间戳",
-                    "type": "string"
-                },
-                "state": {
-                    "description": "池子状态: 0未开启 1进行中 2已结算 3清算中 4未开启等",
+                "tokenAddress": {
                     "type": "string"
                 }
             }
         },
-        "types.UpdatePooldataByIDReply": {
+        "types.TokenApproveRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "privateKey",
+                "rpcUrl",
+                "spender",
+                "tokenAddress"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "授权数量",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "spender": {
+                    "description": "授权地址",
+                    "type": "string"
+                },
+                "tokenAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.TokenBalanceOfRequest": {
+            "type": "object",
+            "required": [
+                "account",
+                "rpcUrl",
+                "tokenAddress"
+            ],
+            "properties": {
+                "account": {
+                    "description": "账户地址",
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenAddress": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.TokenBalanceReply": {
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "return code",
                     "type": "integer"
                 },
                 "data": {
-                    "description": "return data",
-                    "type": "object"
+                    "type": "object",
+                    "properties": {
+                        "balance": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "msg": {
-                    "description": "return information description",
                     "type": "string"
                 }
             }
         },
-        "types.UpdatePooldataByIDRequest": {
+        "types.TokenReadRequest": {
             "type": "object",
+            "required": [
+                "rpcUrl",
+                "tokenAddress"
+            ],
             "properties": {
-                "chainID": {
-                    "description": "主键ID",
+                "rpcUrl": {
                     "type": "string"
                 },
-                "finishAmountBorrow": {
-                    "description": "已完成/归还的借入侧金额",
-                    "type": "string"
-                },
-                "finishAmountLend": {
-                    "description": "已完成/归还的借出侧金额",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "uint64 id",
-                    "type": "integer"
-                },
-                "liquidationAmounBorrow": {
-                    "description": "清算产生的借入侧金额",
-                    "type": "string"
-                },
-                "liquidationAmounLend": {
-                    "description": "清算产生的借出侧金额",
-                    "type": "string"
-                },
-                "poolID": {
-                    "description": "池子 ID，与 poolbases.pool_id 对应",
-                    "type": "string"
-                },
-                "settleAmountBorrow": {
-                    "description": "结算时借入侧(抵押)金额",
-                    "type": "string"
-                },
-                "settleAmountLend": {
-                    "description": "结算时借出侧(贷方)金额",
+                "tokenAddress": {
                     "type": "string"
                 }
             }
         },
-        "types.UpdateTokenInfoByIDReply": {
+        "types.TokenSupplyReply": {
             "type": "object",
             "properties": {
                 "code": {
-                    "description": "return code",
                     "type": "integer"
                 },
                 "data": {
-                    "description": "return data",
-                    "type": "object"
+                    "type": "object",
+                    "properties": {
+                        "totalSupply": {
+                            "type": "string"
+                        }
+                    }
                 },
                 "msg": {
-                    "description": "return information description",
                     "type": "string"
                 }
             }
         },
-        "types.UpdateTokenInfoByIDRequest": {
+        "types.TokenTransferRequest": {
             "type": "object",
+            "required": [
+                "amount",
+                "privateKey",
+                "rpcUrl",
+                "to",
+                "tokenAddress"
+            ],
             "properties": {
-                "chainID": {
-                    "description": "链 ID: 56=BSC 97=测试网",
+                "amount": {
+                    "description": "转账数量",
                     "type": "string"
                 },
-                "decimals": {
-                    "description": "代币精度(小数位数)",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "uint64 id",
-                    "type": "integer"
-                },
-                "logo": {
-                    "description": "代币 logo URL",
+                "privateKey": {
                     "type": "string"
                 },
-                "price": {
-                    "description": "价格(精度值，用于估值与清算)",
+                "rpcUrl": {
                     "type": "string"
                 },
-                "symbol": {
-                    "description": "主键ID",
+                "to": {
+                    "description": "接收地址",
                     "type": "string"
                 },
-                "token": {
-                    "description": "代币合约地址",
+                "tokenAddress": {
                     "type": "string"
                 }
             }
@@ -2640,6 +4088,30 @@ const docTemplate = `{
                 },
                 "password": {
                     "description": "加密后的密码",
+                    "type": "string"
+                }
+            }
+        },
+        "types.WETHDepositRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "privateKey",
+                "rpcUrl",
+                "tokenAddress"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "充值ETH数量(wei)",
+                    "type": "string"
+                },
+                "privateKey": {
+                    "type": "string"
+                },
+                "rpcUrl": {
+                    "type": "string"
+                },
+                "tokenAddress": {
                     "type": "string"
                 }
             }
